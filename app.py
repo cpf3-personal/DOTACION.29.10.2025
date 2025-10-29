@@ -88,9 +88,10 @@ def get_gspread_client():
         return None
 
     try:
-        # --- NUEVO: Limpiar caracteres inválidos ---
-        # Reemplaza espacios no separables (comunes al copiar/pegar) por espacios normales
-        creds_json_str = creds_json_str.replace('\u00a0', ' ')
+        # --- NUEVO: Limpieza de caracteres inválidos (MÁS ROBUSTA) ---
+        # 1. Quita espacios/líneas nuevas al inicio/final
+        # 2. Reemplaza espacios no separables (comunes al copiar/pegar)
+        creds_json_str = creds_json_str.strip().replace('\u00a0', ' ')
         # --- FIN NUEVO ---
 
         # Convertir el string JSON a un diccionario de Python
@@ -485,4 +486,3 @@ def main():
             
 if __name__ == "__main__":
     main()
-
