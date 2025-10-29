@@ -52,6 +52,12 @@ def get_gspread_client():
         return None
 
     try:
+        # --- NUEVO: Limpieza de caracteres inválidos (MÁS ROBUSTA) ---
+        # 1. Quita espacios/líneas nuevas al inicio/final
+        # 2. Reemplaza espacios no separables (comunes al copiar/pegar)
+        creds_json_str = creds_json_str.strip().replace('\u00a0', ' ')
+        # --- FIN NUEVO ---
+        
         # Convertir el string JSON a un diccionario de Python
         creds_dict = json.loads(creds_json_str)
         
@@ -175,5 +181,4 @@ if sh:
     #     st.dataframe(df_otra, hide_index=True, width='stretch')
 else:
     st.error("No se pudo establecer la conexión con Google Sheets.")
-
 
