@@ -1,3 +1,7 @@
+streamlit
+polars
+gspread
+python-dotenv
 altair==5.5.0
 attrs==25.4.0
 blinker==1.9.0
@@ -46,3 +50,4 @@ typing_extensions==4.15.0
 tzdata==2025.2
 urllib3==2.5.0
 watchdog==6.0.0
+
