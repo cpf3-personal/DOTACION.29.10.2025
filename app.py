@@ -58,64 +58,53 @@ BOTONES_COPIADO_POR_HOJA = {
 # --- FIN DICCIONARIOS ---
 
 
-# --- NUEVA FUNCIÓN DE AUTENTICACIÓN SEGURA (CORREGIDA) ---
+# --- ¡¡¡NUEVA LÓGICA DE AUTENTICACIÓN!!! ---
 def get_gspread_client():
     """
     Autentica un cliente de gspread usando st.secrets (para Streamlit Cloud)
     o una variable de entorno (para local).
     """
-    creds_json_str = None
+    creds = None
     
-    # Envolveremos el acceso a st.secrets en un try-except.
-    # Si falla (porque .streamlit/secrets.toml no existe localmente),
-    # simplemente pasará al 'else'.
+    # --- 1. INTENTAR LEER DESDE STREAMLIT CLOUD SECRETS ---
+    # st.secrets ya convierte el TOML a un diccionario de Python
     try:
-        # Intenta leer desde Streamlit Secrets (ideal para despliegue)
         if "GCP_SA_CREDENTIALS" in st.secrets:
-            creds_json_str = st.secrets["GCP_SA_CREDENTIALS"]
+            creds = st.secrets["GCP_SA_CREDENTIALS"]
     except Exception:
         # Falla silenciosamente si st.secrets no está disponible (ej. local sin .toml)
         pass 
 
-    # Si st.secrets no funcionó o no encontró la clave, usa el .env local
-    if not creds_json_str:
+    # --- 2. SI NO ESTÁ EN CLOUD, INTENTAR LEER DESDE .ENV LOCAL ---
+    if not creds:
         creds_json_str = os.environ.get("GCP_SA_CREDENTIALS")
+        if not creds_json_str:
+            st.error("Error: No se encontró 'GCP_SA_CREDENTIALS'. Revisa tu .env local o los Secrets en Streamlit Cloud.")
+            st.stop()
+            return None
+        
+        try:
+            # Limpiar el string JSON leído del .env
+            creds_json_str = creds_json_str.strip().replace('\u00a0', ' ')
+            # Convertir el STRING a un DICIONARIO
+            creds = json.loads(creds_json_str)
+        except json.JSONDecodeError:
+            st.error("Error: El JSON en tu .env local es inválido. Cópialo de nuevo desde el archivo .json descargado.")
+            st.stop()
+            return None
 
-    # Si AÚN no hay credenciales, entonces muestra el error
-    if not creds_json_str:
-        st.error("Error: No se encontró 'GCP_SA_CREDENTIALS'. Revisa tu .env local o los Secrets en Streamlit Cloud.")
-        st.stop()
-        return None
-
+    # --- 3. USAR EL DICCIONARIO 'creds' PARA AUTENTICAR ---
     try:
-        # --- NUEVO: Limpieza de caracteres inválidos (MÁS ROBUSTA) ---
-        # 1. Quita espacios/líneas nuevas al inicio/final
-        # 2. Reemplaza espacios no separables (comunes al copiar/pegar)
-        creds_json_str = creds_json_str.strip().replace('\u00a0', ' ')
-        # --- FIN NUEVO ---
-
-        # Convertir el string JSON a un diccionario de Python
-        creds_dict = json.loads(creds_json_str)
-        
-        # --- CAMBIO 1: Cartel de autenticación eliminado ---
-        # st.info(f"Intentando autenticar con la cuenta de servicio: {creds_dict.get('client_email')}")
-        # --- FIN CAMBIO 1 ---
-
-        # --- CORRECCIÓN DE AUTENTICACIÓN ---
-        # Los scopes se pasan como argumento, no con .with_scopes()
-        client = gspread.service_account_from_dict(creds_dict, scopes=SCOPES)
-        # --- FIN CORRECCIÓN ---
-        
+        # Autenticar usando el diccionario
+        client = gspread.service_account_from_dict(creds, scopes=SCOPES)
         return client
         
-    except json.JSONDecodeError:
-        st.error("Error: El contenido de 'GCP_SA_CREDENTIALS' no es un JSON válido.")
-        st.stop()
-        return None
     except Exception as e:
-        st.error(f"Error al autenticar con gspread: {e}")
+        st.error(f"Error al autenticar con gspread (usando diccionario): {e}")
         st.stop()
         return None
+# --- FIN NUEVA LÓGICA DE AUTENTICACIÓN ---
+
 
 # --- FUNCIÓN AUXILIAR (sin cambios) ---
 def _clean_headers(headers):
@@ -486,3 +475,4 @@ def main():
             
 if __name__ == "__main__":
     main()
+
