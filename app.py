@@ -40,7 +40,7 @@ VISTA_COLUMNAS_POR_HOJA = {
     "PARTE DE ASISTENCIA FAMILIAR" : ["EXPEDIENTE", "GRADO", "NOMBRE Y APELLIDO", "CRED.", "AÑO", "INICIO", "DESDE (ULTIMO CERTIFICADO)", "CANTIDAD DE DIAS (ULTIMO CERTIFICADO)", "HASTA (ULTIMO CERTIFICADO)", "FINALIZACION", "CUMPLE 1528??", "DIAS DE INASISTENCIA JUSTIFICADO", "DIAS DE INASISTENCIAS A HOY", "CANTIDAD DE DIAS ANTERIORES AL TRAMITE", "CODIGO DE AFECC.", "DIVISION" ],
     "ACCIDENTE DE SERVICIO" : ["EXPEDIENTE", "GRADO", "NOMBRE Y APELLIDO", "CRED.", "AÑO", "INICIO", "DESDE", "CANTIDAD DE DIAS (ULTIMO CERTIFICADO)", "HASTA", "FINALIZACION", "DIVISION", "OBSERVACION"],
     "CERTIFICADOS MEDICOS": ["GRADO", "Nombre y Apellido", "CREDENCIAL","SELECCIONA EL TIPO DE TRÁMITE", "CANTIDAD DE DIAS DE REPOSO", "INGRESA EL CERTIFICADO", "DIAGNOSTICO", "NOMBRE Y APELLIDO DEL MÉDICO", "ESPECIALIDAD DEL MÉDICO", "MATRÍCULA DEL MÉDICO", "N° de TELÉFONO DE CONTACTO", "PARENTESCO CON EL FAMILIAR", "NOMBRES Y APELLIDOS DEL FAMILIAR", "FECHA DE NACIMIENTO", "FECHA DE CASAMIENTO (solo para el personal casado)"], 
-    "NOTA DE COMISION MEDICA" : ["NOTA DE D.RR.HH.", "FECHA DE NOTA DE D.RR.HH.", "TEXTO NOTIFICABLE DE LA NOTA", "CREDENCIAL", "EXPEDIENTE", "RELACIONADO A . . .", "FECHA DE EVALUACION VIRTUAL", "FECHA DE EVALUACION PRESENCIAL", "FECHA DE REINTEGRO", "1° FECHA DE EVALUACION VIRTUAL", "2° FECHA DE EVALUACIÓN PRESENCIAL", "GRADO", "APELLIDO Y NOMBRE"],
+    "NOTA DE COMISION MEDICA" : ["NOTA DE D.RR.HH.", "FECHA DE NOTA D.RR.HH.", "TEXTO NOTIFICABLE DE LA NOTA", "CREDENCIAL", "EXPEDIENTE", "RELACIONADO A . . .", "FECHA DE EVALUACION VIRTUAL", "FECHA DE EVALUACION PRESENCIAL", "FECHA DE REINTEGRO", "1° FECHA DE EVALUACION VIRTUAL", "2° FECHA DE EVALUACIÓN PRESENCIAL", "GRADO", "APELLIDO Y NOMBRE"],
     "IMPUNTUALIDADES": ["EXPEDIENTE", "GRADO", "NOMBRES Y APELLIDOS" , "CRED.", "FECHA", "HORA DE DEBIA INGRESAR", "HORA QUE INGRESO", "AÑO", "N° DE IMPUNTUALIDAD"],
     "COMPLEMENTO DE HABERES" : ["EXPEDIENTE", "GRADO", "NOMBRES Y APELLIDOS" , "CRED.", "TIPO"],
     "OFICIOS" : ["EXPEDIENTE", "GRADO", "NOMBRES Y APELLIDOS", "CRED.", "PICU_OFICIO", "FECHA del OFICIO"],
@@ -58,52 +58,52 @@ BOTONES_COPIADO_POR_HOJA = {
 # --- FIN DICCIONARIOS ---
 
 
-# --- ¡¡¡NUEVA LÓGICA DE AUTENTICACIÓN!!! ---
+# --- ¡¡¡LÓGICA DE AUTENTICACIÓN CORREGIDA!!! ---
 def get_gspread_client():
     """
     Autentica un cliente de gspread usando st.secrets (para Streamlit Cloud)
     o una variable de entorno (para local).
     """
-    creds = None
+    creds_str = None
     
     # --- 1. INTENTAR LEER DESDE STREAMLIT CLOUD SECRETS ---
-    # st.secrets ya convierte el TOML a un diccionario de Python
     try:
         if "GCP_SA_CREDENTIALS" in st.secrets:
-            creds = st.secrets["GCP_SA_CREDENTIALS"]
+            creds_str = st.secrets["GCP_SA_CREDENTIALS"] # Esto es un STRING
     except Exception:
         # Falla silenciosamente si st.secrets no está disponible (ej. local sin .toml)
         pass 
 
     # --- 2. SI NO ESTÁ EN CLOUD, INTENTAR LEER DESDE .ENV LOCAL ---
-    if not creds:
-        creds_json_str = os.environ.get("GCP_SA_CREDENTIALS")
-        if not creds_json_str:
+    if not creds_str:
+        creds_str = os.environ.get("GCP_SA_CREDENTIALS") # Esto también es un STRING
+        if not creds_str:
             st.error("Error: No se encontró 'GCP_SA_CREDENTIALS'. Revisa tu .env local o los Secrets en Streamlit Cloud.")
             st.stop()
             return None
-        
-        try:
-            # Limpiar el string JSON leído del .env
-            creds_json_str = creds_json_str.strip().replace('\u00a0', ' ')
-            # Convertir el STRING a un DICIONARIO
-            creds = json.loads(creds_json_str)
-        except json.JSONDecodeError:
-            st.error("Error: El JSON en tu .env local es inválido. Cópialo de nuevo desde el archivo .json descargado.")
-            st.stop()
-            return None
 
-    # --- 3. USAR EL DICCIONARIO 'creds' PARA AUTENTICAR ---
+    # --- 3. AHORA, CONVERTIR EL STRING 'creds_str' A UN DICCIONARIO ---
+    try:
+        # Limpiar el string JSON leído
+        creds_str = creds_str.strip().replace('\u00a0', ' ')
+        # Convertir el STRING a un DICCIONARIO
+        creds_dict = json.loads(creds_str) 
+    except json.JSONDecodeError:
+        st.error("Error: El contenido de 'GCP_SA_CREDENTIALS' no es un JSON válido. Revisa el .env o los Secrets.")
+        st.stop()
+        return None
+
+    # --- 4. USAR EL DICCIONARIO 'creds_dict' PARA AUTENTICAR ---
     try:
         # Autenticar usando el diccionario
-        client = gspread.service_account_from_dict(creds, scopes=SCOPES)
+        client = gspread.service_account_from_dict(creds_dict, scopes=SCOPES)
         return client
         
     except Exception as e:
         st.error(f"Error al autenticar con gspread (usando diccionario): {e}")
         st.stop()
         return None
-# --- FIN NUEVA LÓGICA DE AUTENTICACIÓN ---
+# --- FIN LÓGICA DE AUTENTICACIÓN CORREGIDA ---
 
 
 # --- FUNCIÓN AUXILIAR (sin cambios) ---
