@@ -68,52 +68,68 @@ def get_gspread_client():
     creds_dict = None
     
     # --- 1. INTENTAR LEER DESDE STREAMLIT CLOUD SECRETS ---
+   
+# --- LÓGICA DE AUTENTICACIÓN UNIVERSAL (CORREGIDA Y OPTIMIZADA) ---
+def get_gspread_client():
+    """
+    Autentica un cliente de gspread usando:
+    - st.secrets (para Streamlit Cloud)
+    - o un archivo .env local (para desarrollo)
+    Funciona tanto si el secreto es dict (TOML table) como string JSON.
+    """
+    import json
+    creds_data = None
+    creds_dict = None
+
+    # --- 1️⃣ Intentar leer desde Streamlit Cloud Secrets ---
     try:
         if "GCP_SA_CREDENTIALS" in st.secrets:
-            # st.secrets puede devolver un dict si es TOML, o un str si es string
-            creds_data = st.secrets["GCP_SA_CREDENTIALS"] 
-    except Exception:
-        # Falla silenciosamente si st.secrets no está disponible (ej. local sin .toml)
-        pass 
-
-    # --- 2. SI NO ESTÁ EN CLOUD, INTENTAR LEER DESDE .ENV LOCAL ---
-    if not creds_data:
-        creds_data = os.environ.get("GCP_SA_CREDENTIALS") # Esto siempre es un STRING
-        if not creds_data:
-            st.error("Error: No se encontró 'GCP_SA_CREDENTIALS'. Revisa tu .env local o los Secrets en Streamlit Cloud.")
-            st.stop()
-            return None
-
-    # --- 3. PROCESAR LAS CREDENCIALES (SEAN DICT O STR) ---
-    if isinstance(creds_data, dict):
-        # Si st.secrets ya lo analizó como un diccionario (TOML table), úsalo.
-        creds_dict = creds_data
-    
-    elif isinstance(creds_data, str):
-        # Si es un string (desde .env o TOML string), límpialo y cárgalo.
-        try:
-            creds_str_cleaned = creds_data.strip().replace('\u00a0', ' ')
-            creds_dict = json.loads(creds_str_cleaned)
-        except json.JSONDecodeError:
-            st.error("Error: El contenido de 'GCP_SA_CREDENTIALS' no es un JSON válido. Revisa el .env o los Secrets.")
-            st.stop()
-            return None
-    
-    else:
-        st.error(f"Error: El formato de 'GCP_SA_CREDENTIALS' es desconocido (tipo: {type(creds_data)}).")
-        st.stop()
-        return None
-
-    # --- 4. USAR EL DICCIONARIO 'creds_dict' PARA AUTENTICAR ---
-    try:
-        # Autenticar usando el diccionario
-        client = gspread.service_account_from_dict(creds_dict, scopes=SCOPES)
-        return client
-        
+            creds_data = st.secrets["GCP_SA_CREDENTIALS"]
+            # Si viene como string, convertir a dict
+            if isinstance(creds_data, str):
+                try:
+                    creds_data = json.loads(creds_data)
+                except json.JSONDecodeError as e:
+                    st.error(f"❌ Error al parsear JSON de st.secrets: {e}")
+                    st.stop()
+                    return None
     except Exception as e:
-        st.error(f"Error al autenticar con gspread (usando diccionario): {e}")
+        st.warning(f"No se pudo leer st.secrets: {e}")
+
+    # --- 2️⃣ Si no está en secrets, intentar leer desde .env local ---
+    if not creds_data:
+        creds_env = os.environ.get("GCP_SA_CREDENTIALS")
+        if creds_env:
+            try:
+                creds_data = json.loads(creds_env)
+            except json.JSONDecodeError as e:
+                st.error(f"❌ Error al parsear JSON del .env: {e}")
+                st.stop()
+                return None
+        else:
+            st.error("⚠️ No se encontró 'GCP_SA_CREDENTIALS' en st.secrets ni en el archivo .env")
+            st.stop()
+            return None
+
+    # --- 3️⃣ Validar formato final ---
+    if not isinstance(creds_data, dict):
+        st.error(f"El contenido de 'GCP_SA_CREDENTIALS' no es un diccionario válido (tipo: {type(creds_data)})")
         st.stop()
         return None
+
+    # --- 4️⃣ Autenticar con gspread ---
+    try:
+        client = gspread.service_account_from_dict(creds_data, scopes=SCOPES)
+        return client
+    except Exception as e:
+        st.error(f"❌ Error al autenticar con gspread: {e}")
+        st.stop()
+        return None
+# --- FIN LÓGICA DE AUTENTICACIÓN UNIVERSAL ---
+
+
+
+
 # --- FIN LÓGICA DE AUTENTICACIÓN CORREGIDA ---
 
 
