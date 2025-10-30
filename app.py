@@ -64,32 +64,43 @@ def get_gspread_client():
     Autentica un cliente de gspread usando st.secrets (para Streamlit Cloud)
     o una variable de entorno (para local).
     """
-    creds_str = None
+    creds_data = None
+    creds_dict = None
     
     # --- 1. INTENTAR LEER DESDE STREAMLIT CLOUD SECRETS ---
     try:
         if "GCP_SA_CREDENTIALS" in st.secrets:
-            creds_str = st.secrets["GCP_SA_CREDENTIALS"] # Esto es un STRING
+            # st.secrets puede devolver un dict si es TOML, o un str si es string
+            creds_data = st.secrets["GCP_SA_CREDENTIALS"] 
     except Exception:
         # Falla silenciosamente si st.secrets no está disponible (ej. local sin .toml)
         pass 
 
     # --- 2. SI NO ESTÁ EN CLOUD, INTENTAR LEER DESDE .ENV LOCAL ---
-    if not creds_str:
-        creds_str = os.environ.get("GCP_SA_CREDENTIALS") # Esto también es un STRING
-        if not creds_str:
+    if not creds_data:
+        creds_data = os.environ.get("GCP_SA_CREDENTIALS") # Esto siempre es un STRING
+        if not creds_data:
             st.error("Error: No se encontró 'GCP_SA_CREDENTIALS'. Revisa tu .env local o los Secrets en Streamlit Cloud.")
             st.stop()
             return None
 
-    # --- 3. AHORA, CONVERTIR EL STRING 'creds_str' A UN DICCIONARIO ---
-    try:
-        # Limpiar el string JSON leído
-        creds_str = creds_str.strip().replace('\u00a0', ' ')
-        # Convertir el STRING a un DICCIONARIO
-        creds_dict = json.loads(creds_str) 
-    except json.JSONDecodeError:
-        st.error("Error: El contenido de 'GCP_SA_CREDENTIALS' no es un JSON válido. Revisa el .env o los Secrets.")
+    # --- 3. PROCESAR LAS CREDENCIALES (SEAN DICT O STR) ---
+    if isinstance(creds_data, dict):
+        # Si st.secrets ya lo analizó como un diccionario (TOML table), úsalo.
+        creds_dict = creds_data
+    
+    elif isinstance(creds_data, str):
+        # Si es un string (desde .env o TOML string), límpialo y cárgalo.
+        try:
+            creds_str_cleaned = creds_data.strip().replace('\u00a0', ' ')
+            creds_dict = json.loads(creds_str_cleaned)
+        except json.JSONDecodeError:
+            st.error("Error: El contenido de 'GCP_SA_CREDENTIALS' no es un JSON válido. Revisa el .env o los Secrets.")
+            st.stop()
+            return None
+    
+    else:
+        st.error(f"Error: El formato de 'GCP_SA_CREDENTIALS' es desconocido (tipo: {type(creds_data)}).")
         st.stop()
         return None
 
