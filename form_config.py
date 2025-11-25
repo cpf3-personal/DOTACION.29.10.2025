@@ -118,7 +118,7 @@ FORM_CONFIG = {
         "FECHA CASAM.": {"type": "date"},
         # --- FIN DEL CAMBIO ---
         "DEST. ANT. UNIDAD": {"type": "text"},
-        "ESCALAFON": {"type": "select", "options": lambda conn: get_options_from_sheet(conn, "N1:N13")},
+        "ESCALAFON": {"type": "select", "options": lambda conn: get_options_from_sheet(conn, "N1:N19")},
         "PROFESION": {"type": "text"},
         "DOMICILIO": {"type": "text"},
         "LOCALIDAD": {"type": "text"},
@@ -204,7 +204,8 @@ FORM_CONFIG = {
     "PARTE DE ENFERMO": {
         "EXPEDIENTE": {"type": "text", "max_chars": 40},
         "CRED.": {"type": "text", "validate": "cedula"},
-        "INICIO": {"type": "date"},
+        "MOTIVO": {"type": "select", "options": ["PARTE DE ENFERMO COMUN", "PARTE DE ENFERMO DE LARGA EVOLUCION", "PARTE DE ENFERMO DE LARGA EVOLUCION POR EMBARAZO"]},
+        "INICIO": {"type": "date"},        
         "DESDE (ULTIMO CERTIFICADO)": {"type": "date"}, # Corregido
         "CANTIDAD DE DIAS (ULTIMO CERTIFICADO)": {"type": "text", "validate": "max_30"},
         "FINALIZACION": {"type": "date"},
@@ -224,6 +225,7 @@ FORM_CONFIG = {
     "ACCIDENTE DE SERVICIO": {
         "EXPEDIENTE": {"type": "text", "max_chars": 40},
         "CRED.": {"type": "text", "validate": "cedula"},
+        "MOTIVO": {"type": "select", "options": ["Presunto Accidente de Servicio", "Presunto Accidente In Itinere"]},       
         "INICIO": {"type": "date"},
         "DESDE (ULTIMO CERTIFICADO)": {"type": "date"},
         "CANTIDAD DE DIAS (ULTIMO CERTIFICADO)": {"type": "text", "validate": "max_30"},
@@ -275,7 +277,7 @@ FORM_CONFIG = {
         "EXPEDIENTE": {"type": "text", "max_chars": 40},
         "CRED.": {"type": "text", "validate": "cedula"},
         "FECHA DE LA FALTA": {"type": "date"}, # Asumo fecha
-        "MOTIVO": {"type": "select", "options": ["FALTA CON AVISO", "FALTA SIN AVISO"]},
+        "N° FALTA CON/SIN AVISO": {"type": "select", "options": lambda conn: get_options_from_sheet(conn, "V1:V20")},
     },
     "MESA DE ENTRADA": {
         # Esta hoja no estaba en tu lista de CAMPOS_DE_FORMULARIOS
