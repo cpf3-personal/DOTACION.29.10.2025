@@ -241,37 +241,41 @@ SCOPES = ["https://www.googleapis.com/auth/spreadsheets", "https://www.googleapi
 # (Aquí van tus diccionarios VISTA_COLUMNAS_POR_HOJA y BOTONES_COPIADO_POR_HOJA tal cual estaban)
 VISTA_COLUMNAS_POR_HOJA = {
     "DOTACION": ["N°", "COD", "GRADO", "APELLIDOS", "NOMBRES","CRED.", "SITUACION", "MASC / FEM", "INGRESO", "DISP. ING.", "FECHA DISP. ING", "FECHA ING. C.P.F.NOA", "DISP.", "FECHA DE LA DISP.", "FECHA NAC.", "EDAD", "D.N.I.", "C.U.I.L.", "ESTADO CIVIL", "FECHA CASAM.", "JEFATURA / DIRECCION", "DEPARTAMENTO / DIVISION SECCION", "FUNCION", "ORDEN INTERNA", "A PARTIR DE", "EXPEDIENTE DE FUNCION", "DEST. ANT. UNIDAD", "ESCALAFON", "PROFESION", "DOMICILIO", "LOCALIDAD", "PROVINCIA", "TELEFONO", "USUARIO G.D.E.", "CORREO ELEC", "REPARTICIÓN", "SECTOR", "JERARQUIA"],
-    "FUNCIONES": ["EXPEDIENTE", "GRADO", "NOMBRES Y APELLIDOS", "CRED.", "JEFATURA / DIRECCION", "DIVISION / DEPARTAMENTO", "SECCION", "CARGO", "FUNCION DEL B.P.N 700", "ORDEN INTERNA", "A PARTIR DE", "CAMBIO DE DEPENDENCIA", "TITULAR – INTERINO - A CARGO", "HORARIO", "TURNO"],
-    "SANCION" : ["EXPEDIENTE", "GRADO", "NOMBRES Y APELLIDOS" , "CRED.", "FECHA DE LA FALTA", "FECHA DE NOTIFICACION", "ART.", "TIPO DE SANCION", "DIAS DE ARRESTO"],
-    "DOMICILIOS" : ["EXPEDIENTE", "GRADO", "NOMBRES Y APELLIDOS" , "CRED.", "FECHA DE CAMBIO", "DOMICILIO", "LOCALIDAD", "PROVINCIA" ],
-    "CURSOS" : ["EXPEDIENTE", "GRADO", "NOMBRES Y APELLIDOS" , "CRED.", "CURSO"],
-    "SOLICITUD DE PASES" : ["EXPEDIENTE", "GRADO", "NOMBRES Y APELLIDOS" , "CRED.", "TIPO DE PASE", "NOMBRE DE LA PERMUTA", "DESTINO"], 
-    "DISPONIBILIDAD" : ["EXPEDIENTE", "GRADO", "NOMBRES Y APELLIDOS" , "CRED.", "DESDE", "DIAS", "FINALIZACION"],
-    "LICENCIAS": ["EXPEDIENTE", "GRADO", "NOMBRE Y APELLIDO", "CRED.", "TIPO DE LIC", "DIAS", "DESDE", "HASTA", "AÑO", "PASAJES" , "DIAS POR VIAJE", "LUGAR" ],
-    "LACTANCIA": ["EXPEDIENTE", "GRADO", "NOMBRE Y APELLIDO", "CRED.", "NOMBRE COMPLETO HIJO/A", "FECHA DE NACIMIENTO", "EXPEDIENTE DONDE LO INFORMO", "FECHAS", "PRORROGA FECHA"],
-    "PARTE DE ENFERMO" : ["EXPEDIENTE", "GRADO", "NOMBRE Y APELLIDO", "CRED.", "AÑO", "INICIO", "DESDE (ULTIMO CERTIFICADO)", "CANTIDAD DE DIAS (ULTIMO CERTIFICADO)", "HASTA (ULTIMO CERTIFICADO)", "FINALIZACION", "CUMPLE 1528??", "DIAS DE INASISTENCIA JUSTIFICADO", "DIAS DE INASISTENCIA A HOY", "CANTIDAD DE DIAS ANTERIORES AL TRAMITE", "CODIGO DE AFECC.", "DIVISION" ],
-    "PARTE DE ASISTENCIA FAMILIAR" : ["EXPEDIENTE", "GRADO", "NOMBRE Y APELLIDO", "CRED.", "AÑO", "INICIO", "DESDE (ULTIMO CERTIFICADO)", "CANTIDAD DE DIAS (ULTIMO CERTIFICADO)", "HASTA (ULTIMO CERTIFICADO)", "FINALIZACION", "CUMPLE 1528??", "DIAS DE INASISTENCIA JUSTIFICADO", "DIAS DE INASISTENCIA A HOY", "CANTIDAD de DIAS ANTERIORES AL TRAMITE", "CODIGO DE AFECC.", "DIVISION" ],
-    "ACCIDENTE DE SERVICIO" : ["EXPEDIENTE", "GRADO", "NOMBRE Y APELLIDO", "CRED.", "AÑO", "INICIO", "DESDE", "CANTIDAD DE DIAS (ULTIMO CERTIFICADO)", "HASTA", "FINALIZACION", "DIVISION", "OBSERVACION"],
-    "CERTIFICADOS MEDICOS": ["GRADO", "Nombre y Apellido", "CREDENCIAL","SELECCIONA EL TIPO DE TRÁMITE", "CANTIDAD DE DIAS DE REPOSO", "INGRESA EL CERTIFICADO", "DIAGNOSTICO", "NOMBRE Y APELLIDO DEL MÉDICO", "ESPECIALIDAD DEL MÉDICO", "MATRÍCULA DEL MÉDICO", "N° de TELÉFONO DE CONTACTO", "PARENTESCO CON EL FAMILIAR", "NOMBRES Y APELLIDOS DEL FAMILIAR", "FECHA DE NACIMIENTO", "FECHA DE CASAMIENTO (solo para el personal casado)"], 
-    "NOTA DE COMISION MEDICA" : ["NOTA DE D.RR.HH.", "FECHA DE NOTA D.RR.HH.", "TEXTO NOTIFICABLE DE la NOTA", "CRED.", "EXPEDIENTE", "RELACIONADO A . . .", "FECHA DE EVALUACION VIRTUAL", "FECHA DE EVALUACION PRESENCIAL", "FECHA DE REINTEGRO", "1° FECHA DE EVALUACION VIRTUAL", "2° FECHA DE EVALUACIÓN PRESENCIAL", "GRADO", "APELLIDO Y NOMBRE"],
-    "IMPUNTUALIDADES": ["EXPEDIENTE", "GRADO", "NOMBRES Y APELLIDOS" , "CRED.", "FECHA", "HORA DE DEBIA INGRESAR", "HORA QUE INGRESO", "AÑO", "N° DE IMPUNTUALIDAD"],
-    "COMPLEMENTO DE HABERES" : ["EXPEDIENTE", "GRADO", "NOMBRES Y APELLIDOS" , "CRED.", "TIPO"],
-    "OFICIOS" : ["EXPEDIENTE", "GRADO", "NOMBRES Y APELLIDOS", "CRED.", "PICU_OFICIO", "FECHA del OFICIO"],
-    "NOTAS DAI" : ["NOTA DAI", "GRADO", "NOMBRES Y APELLIDOS", "CRED.", "PICU_NOTA_DAI", "FECHA de NOTA DAI"],
-    "INASISTENCIAS" : ["EXPEDIENTE", "GRADO", "NOMBRES Y APELLIDOS", "CRED.", "FECHA DE LA FALTA", "MOTIVO"],
-    "MESA DE ENTRADA": ["Número Expediente", "Código Trámite", "Descripción del Trámite", "Motivo"],
+    
+    "FUNCIONES": ["N°","EXPEDIENTE", "GRADO", "NOMBRES Y APELLIDOS", "CRED.", "JEFATURA / DIRECCION", "DIVISION / DEPARTAMENTO", "SECCION", "CARGO", "FUNCION DEL B.P.N 700", "ORDEN INTERNA", "A PARTIR DE", "CAMBIO DE DEPENDENCIA", "TITULAR – INTERINO - A CARGO", "HORARIO", "TURNO"],
+    
+    "SANCION" : ["N°", "EXPEDIENTE", "GRADO", "NOMBRES Y APELLIDOS" , "CRED.", "FECHA DE LA FALTA", "FECHA DE NOTIFICACION", "ART.", "TIPO DE SANCION", "DIAS DE ARRESTO"],
+    
+    "DOMICILIOS" : ["N°","EXPEDIENTE", "GRADO", "NOMBRES Y APELLIDOS" , "CRED.", "FECHA DE CAMBIO", "DOMICILIO", "LOCALIDAD", "PROVINCIA" ],
+    
+    "CURSOS" : ["N°","EXPEDIENTE", "GRADO", "NOMBRES Y APELLIDOS" , "CRED.", "CURSO"],
+    "SOLICITUD DE PASES" : ["N°","EXPEDIENTE", "GRADO", "NOMBRES Y APELLIDOS" , "CRED.", "TIPO DE PASE", "NOMBRE DE LA PERMUTA", "DESTINO"], 
+    "DISPONIBILIDAD" : ["N°","EXPEDIENTE", "GRADO", "NOMBRES Y APELLIDOS" , "CRED.", "DESDE", "DIAS", "FINALIZACION"],
+    "LICENCIAS": ["N°","EXPEDIENTE", "GRADO", "NOMBRES Y APELLIDOS", "CRED.", "TIPO DE LICENCIA", "DIAS", "DESDE", "HASTA", "AÑO", "PASAJES" , "DIAS POR VIAJE", "REINTEGRO","LUGAR" ,"REINTEGRADO SI/NO"],
+    "LACTANCIA": ["N°","EXPEDIENTE", "GRADO", "NOMBRES Y APELLIDOS", "CRED.", "NOMBRE COMPLETO HIJO/A", "FECHA DE NACIMIENTO", "EXPEDIENTE DONDE LO INFORMO", "FECHAS", "PRORROGA FECHA"],
+    "PARTE DE ENFERMO" : ["N°","EXPEDIENTE", "GRADO", "NOMBRES Y APELLIDOS", "CRED.", "AÑO", "INICIO", "DESDE (ULTIMO CERTIFICADO)", "CANTIDAD DE DIAS (ULTIMO CERTIFICADO)", "HASTA (ULTIMO CERTIFICADO)", "FINALIZACION", "CUMPLE 1528??", "DIAS DE INASISTENCIA JUSTIFICADO", "DIAS DE INASISTENCIA A HOY", "CANTIDAD DE DIAS ANTERIORES AL TRAMITE", "CODIGO DE AFECC.", "DIVISION" ],
+    "PARTE DE ASISTENCIA FAMILIAR" : ["N°","EXPEDIENTE", "GRADO", "NOMBRES Y APELLIDOS", "CRED.", "AÑO", "INICIO", "DESDE (ULTIMO CERTIFICADO)", "CANTIDAD DE DIAS (ULTIMO CERTIFICADO)", "HASTA (ULTIMO CERTIFICADO)", "FINALIZACION", "CUMPLE 1528??", "DIAS DE INASISTENCIA JUSTIFICADO", "DIAS DE INASISTENCIA A HOY", "CANTIDAD de DIAS ANTERIORES AL TRAMITE", "CODIGO DE AFECC.", "DIVISION" ],
+    "ACCIDENTE DE SERVICIO" : ["N°","EXPEDIENTE", "GRADO", "NOMBRES Y APELLIDOS", "CRED.", "AÑO", "INICIO", "DESDE", "CANTIDAD DE DIAS (ULTIMO CERTIFICADO)", "HASTA", "FINALIZACION", "DIVISION", "OBSERVACION"],
+    "CERTIFICADOS MEDICOS": ["N°","GRADO", "Nombre y Apellido", "CREDENCIAL","SELECCIONA EL TIPO DE TRÁMITE", "CANTIDAD DE DIAS DE REPOSO", "INGRESA EL CERTIFICADO", "DIAGNOSTICO", "NOMBRE Y APELLIDO DEL MÉDICO", "ESPECIALIDAD DEL MÉDICO", "MATRÍCULA DEL MÉDICO", "N° de TELÉFONO DE CONTACTO", "PARENTESCO CON EL FAMILIAR", "NOMBRES Y APELLIDOS DEL FAMILIAR", "FECHA DE NACIMIENTO", "FECHA DE CASAMIENTO (solo para el personal casado)"], 
+    "NOTA DE COMISION MEDICA" : ["N°","NOTA DE D.RR.HH.", "FECHA DE NOTA D.RR.HH.", "TEXTO NOTIFICABLE DE la NOTA", "CRED.", "EXPEDIENTE", "RELACIONADO A . . .", "FECHA DE EVALUACION VIRTUAL", "FECHA DE EVALUACION PRESENCIAL", "FECHA DE REINTEGRO", "1° FECHA DE EVALUACION VIRTUAL", "2° FECHA DE EVALUACIÓN PRESENCIAL", "GRADO", "APELLIDO Y NOMBRE"],
+    "IMPUNTUALIDADES": ["N°","EXPEDIENTE", "GRADO", "NOMBRES Y APELLIDOS" , "CRED.", "FECHA", "HORA DE DEBIA INGRESAR", "HORA QUE INGRESO", "AÑO", "N° DE IMPUNTUALIDAD"],
+    "COMPLEMENTO DE HABERES" : ["N°","EXPEDIENTE", "GRADO", "NOMBRES Y APELLIDOS" , "CRED.", "TIPO"],
+    "OFICIOS" : ["N°","EXPEDIENTE", "GRADO", "NOMBRES Y APELLIDOS", "CRED.", "PICU_OFICIO", "FECHA del OFICIO"],
+    "NOTAS DAI" : ["N°","NOTA DAI", "GRADO", "NOMBRES Y APELLIDOS", "CRED.", "PICU_NOTA_DAI", "FECHA de NOTA DAI"],
+    "INASISTENCIAS" : ["N°","EXPEDIENTE", "GRADO", "NOMBRES Y APELLIDOS", "CRED.", "FECHA DE LA FALTA", "MOTIVO"],
+    "MESA DE ENTRADA": ["N°","Número Expediente", "Código Trámite", "Descripción del Trámite", "Motivo"],
 }
 
 BOTONES_COPIADO_POR_HOJA = {
     "DOTACION": { "RADIOGRAMA DE PRESENTACION (NOTA)": "RADIOGRAMA DE PRESENTACION (NOTA)", "ACTA DE NOTIFICACION POR TRASLADO (ACTFC)": "ACTA DE NOTIFICACION POR TRASLADO (ACTFC)", "RADIOGRAMA DE NOTIFICACION (NOTA)": "RADIOGRAMA DE NOTIFICACION (NOTA)", "REMISION DE D.L.P. (NOTA)": "REMISION DE D.L.P. (NOTA)" , "SITUACION DE REVISTA (SOLO WORD)": "SITUACION DE REVISTA (SOLO WORD)" },
 
-    "FUNCIONES": { "ORDENATIVA (ORDEN)": "ORDENATIVA (ORDEN)", "ARTICULO": "ARTICULO", "ELEVACION (INFFC)": "ELEVACION (INFFC)",  "ARCHIVO": "ARCHIVO", "ANOTACION D.L.P." : "ANOTACION D.L.P."},
+    "FUNCIONES": { "ORDENATIVA (ORDEN)": "ORDENATIVA (ORDEN)", "ARTICULO": "ARTICULO", "SITUACION DE REVISTA ELEVACION FUNCION (INFFC)": "SITUACION DE REVISTA ELEVACION FUNCION (INFFC)", "ELEVACION FUNCION (IF)":"ELEVACION FUNCION (IF)", "SOLICITUD DE NOTIFICACION (INFFC)":"SOLICITUD DE NOTIFICACION (INFFC)", "ARCHIVO (IF)": "ARCHIVO (IF)", "ANOTACION D.L.P." : "ANOTACION D.L.P."},
 
     "LICENCIAS": { "SITUACION DE REVISTA LICENCIA (INFFC)": "SITUACION DE REVISTA LICENCIA (INFFC)", "ORDENATIVA (ORDEN)": "ORDENATIVA (ORDEN)", "CONTROL DE DOCUMENTACION (INFFC)": "CONTROL DE DOCUMENTACION (INFFC)", "ARCHIVO (IF)": "ARCHIVO (IF)" },
 
-    "PARTE DE ENFERMO": { "SITUACION DE REVISTA (INFFC)": "SITUACION DE REVISTA (INFFC)", "SOLICITUD DE CERTIFICADO (INFFC)": "SOLICITUD DE CERTIFICADO (INFFC)", "ORDENATIVA (ORDEN)": "ORDENATIVA (ORDEN)", "ARCHIVO (IF)": "ARCHIVO (IF)", "SITUACION DE REVISTA ELEVACION P.E.L.E. (INFFC)": "SITUACION DE REVISTA ELEVACION P.E.L.E. (INFFC)", "ELVACION P.E.L.E. (IF)": "ELVACION P.E.L.E. (IF)" },
+    "PARTE DE ENFERMO": { "SITUACION DE REVISTA (INFFC)": "SITUACION DE REVISTA (INFFC)", "SOLICITUD DE CERTIFICADO (INFFC)": "SOLICITUD DE CERTIFICADO (INFFC)", "ORDENATIVA (ORDEN)": "ORDENATIVA (ORDEN)", "ARCHIVO (IF)": "ARCHIVO (IF)", "SITUACION DE REVISTA ELEVACION P.E.L.E. (INFFC)": "SITUACION DE REVISTA ELEVACION P.E.L.E. (INFFC)", "ELVACION PAF (IF)": "ELVACION PAF (IF)" },
 
-    "PARTE DE ASISTENCIA FAMILIAR": { "SITUACION DE REVISTA (INFFC)": "SITUACION DE REVISTA (INFFC)", "INFORMAR FAMILIAR (INFFC)": "INFORMAR FAMILIAR (INFFC)","SOLICITUD DE CERTIFICADO (INFFC)": "SOLICITUD DE CERTIFICADO (INFFC)", "ORDENATIVA (ORDEN)": "ORDENATIVA (ORDEN)", "ARCHIVO (IF)": "ARCHIVO (IF)", "SITUACION DE REVISTA ELEVACION P.A.F. (INFFC)": "SITUACION DE REVISTA ELEVACION P.A.F. (INFFC)", "ELVACION P.A.F. (IF)": "ELVACION P.A.F. (IF)" },
+    "PARTE DE ASISTENCIA FAMILIAR": { "SITUACION DE REVISTA (INFFC)": "SITUACION DE REVISTA (INFFC)", "INFORMAR FAMILIAR (INFFC)": "INFORMAR FAMILIAR (INFFC)","SOLICITUD DE CERTIFICADO (INFFC)": "SOLICITUD DE CERTIFICADO (INFFC)", "ORDENATIVA (ORDEN)": "ORDENATIVA (ORDEN)", "ARCHIVO (IF)": "ARCHIVO (IF)", "SITUACION DE REVISTA ELEVACION PAF (INFFC)": "SITUACION DE REVISTA ELEVACION PAF (INFFC)", "ELVACION PAF (IF)": "ELVACION PAF (IF)" },
 
     "ACCIDENTE DE SERVICIO": { "SITUACION DE REVISTA (INFFC)": "SITUACION DE REVISTA (INFFC)", "ELVACION ACCIDENTE (IF)": "ELVACION ACCIDENTE (IF)","SITUACION DE REVISTA AUDITORIA (INFFC)": "SITUACION DE REVISTA AUDITORIA (INFFC)", "PICU PARA D.L.P.": "PICU PARA D.L.P." },
 
@@ -279,7 +283,7 @@ BOTONES_COPIADO_POR_HOJA = {
     
     "OFICIOS": { "SITUACION DE REVISTA OFICIO (INFFC)": "SITUACION DE REVISTA OFICIO (INFFC)", "SOLICITUD DE NOTIFICACION (INFFC)": "SOLICITUD DE NOTIFICACION (INFFC)", "ELEVACION DE NOTIFICACION (INFFC)": "ELEVACION DE NOTIFICACION (INFFC)", "ARCHIVO IF": "ARCHIVO IF", "ANOTACION D.L.P." : "ANOTACION D.L.P."},
 
-    "INASISTENCIAS": { "SITUACION DE REVISTA FALTA CON/SIN AVISO (INFFC)": "SITUACION DE REVISTA FALTA CON/SIN AVISO (INFFC)", "ORDENATIVA DE FALTACON/SIN AVISO (ORDEN)": "ORDENATIVA DE FALTACON/SIN AVISO (ORDEN)", "ARCHIVO (IF)": "ARCHIVO (IF)" }
+    "INASISTENCIAS": { "SITUACION DE REVISTA FALTA CON/SIN AVISO (INFFC)": "SITUACION DE REVISTA FALTA CON/SIN AVISO (INFFC)", "ORDENATIVA DE FALTACON/SIN AVISO (ORDEN)": "ORDENATIVA DE FALTACON/SIN AVISO (ORDEN)", "SITUACION DE REVISTA ELEVACION FSA/FCA (INFFC)":"SITUACION DE REVISTA ELEVACION FSA/FCA (INFFC)", "ELVACION FCA/FSC (IF)":"ELVACION FCA/FSC (IF)", "ARCHIVO (IF)": "ARCHIVO (IF)" }
 
 }
 
@@ -288,29 +292,20 @@ BOTONES_COPIADO_POR_HOJA = {
 @st.cache_resource
 def get_gspread_client():
     creds_data = None
-    
-    # 1. Intentamos obtener credenciales de st.secrets (falla si no existe el archivo)
     try:
-        # Acceder a st.secrets puede lanzar FileNotFoundError o StreamlitSecretNotFoundError
-        # si el archivo .streamlit/secrets.toml no existe.
         if "GCP_SA_CREDENTIALS" in st.secrets:
             creds_data = st.secrets["GCP_SA_CREDENTIALS"]
     except Exception:
-        # Si falla, simplemente lo ignoramos y seguimos a la siguiente opción
         pass
 
-    # 2. Si no funcionó, intentamos variables de entorno
     if not creds_data:
         creds_data = os.environ.get("GCP_SA_CREDENTIALS")
     
-    # 3. Si aún no hay nada, mostramos error
     if not creds_data:
         st.error("Error: No se encontró 'GCP_SA_CREDENTIALS'.")
-        st.info("Si estás ejecutando localmente, asegúrate de tener el archivo `.streamlit/secrets.toml` o la variable de entorno configurada.")
         st.stop()
         return None
     
-    # Procesar credenciales
     creds_dict = creds_data if isinstance(creds_data, dict) else None
     if creds_dict is None:
         try:
@@ -377,10 +372,10 @@ def main():
     # --- NUEVO SELECTOR MULTIPLE ---
     st.markdown("### Selección de Hojas de Trabajo")
     selected_sheets = st.multiselect(
-        "Selecciona hasta 2 hojas para visualizar simultáneamente:",
+        "Selecciona hasta 4 hojas para visualizar simultáneamente:",
         options=sheet_names,
         default=[sheet_names[0]] if sheet_names else None,
-        max_selections=2,
+        max_selections=4,
         key="multi_sheet_selector"
     )
     st.markdown("---")
@@ -436,7 +431,7 @@ def main():
                 with st.expander(f"🔍 Filtros para {sheet_name}", expanded=False):
                     text_cols = [c for c in df_filtered.columns if df_filtered[c].dtype == pl.String]
                     
-                    sel_cols = st.multiselect("Columnas:", text_cols, default=text_cols[:2] if len(text_cols)>1 else text_cols, key=f"cols_{sheet_name}")
+                    sel_cols = st.multiselect("Columnas:", text_cols, default=text_cols[:6] if len(text_cols)>1 else text_cols, key=f"cols_{sheet_name}")
                     cond = st.selectbox("Condición:", ["Contiene texto", "Celda Vacía", "Celda No Vacía"], key=f"cond_{sheet_name}")
                     
                     term = ""
@@ -486,9 +481,34 @@ def main():
                             full_row_dict = full_row.row(0, named=True)
                             
                             st.info(f"Fila seleccionada: {id_val}")
-                            if st.button(f"✏️ Editar este registro ({sheet_name})", key=f"btn_edit_sel_{sheet_name}"):
-                                set_sheet_mode(sheet_name, "edit", full_row_dict)
-                                st.rerun()
+                            
+                            # --- MODIFICACIÓN: Botones de Editar y Eliminar ---
+                            col_edit, col_delete = st.columns([0.3, 0.3])
+                            with col_edit:
+                                if st.button(f"✏️ Editar", key=f"btn_edit_sel_{sheet_name}"):
+                                    set_sheet_mode(sheet_name, "edit", full_row_dict)
+                                    st.rerun()
+                            
+                            with col_delete:
+                                # Botón Eliminar con key única
+                                if st.button(f"🗑️ Eliminar", key=f"btn_delete_sel_{sheet_name}_{id_val}", type="primary"):
+                                    try:
+                                        with st.spinner("Eliminando registro..."):
+                                            # Lógica de eliminación
+                                            sh = gc.open_by_key(GOOGLE_SHEET_ID)
+                                            worksheet = sh.worksheet(sheet_name)
+                                            # Buscar la celda con el ID exacto en la columna 1
+                                            cell = worksheet.find(str(id_val), in_column=1)
+                                            if cell:
+                                                worksheet.delete_rows(cell.row)
+                                                st.success("✅ Fila eliminada correctamente.")
+                                                load_data_from_sheets.clear()
+                                                st.rerun()
+                                            else:
+                                                st.error("❌ No se encontró la fila en Google Sheets.")
+                                    except Exception as e:
+                                        st.error(f"❌ Error al eliminar: {e}")
+                            # --- FIN MODIFICACIÓN ---
 
                             # Copiado Manual
                             if sheet_name in BOTONES_COPIADO_POR_HOJA:
