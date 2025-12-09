@@ -181,7 +181,7 @@ FORM_CONFIG = {
     "LICENCIAS": {
         "EXPEDIENTE": {"type": "text", "max_chars": 40},
         "CRED.": {"type": "text", "validate": "cedula"},
-        "TIPO DE LICENCIA": {"type": "select", "options": lambda conn: get_options_from_sheet(conn, "E1:E30")},
+        "TIPO DE LIC": {"type": "select", "options": lambda conn: get_options_from_sheet(conn, "E1:E30")},
         "DIAS": {"type": "text", "validate": "numeric"},
         "DESDE": {"type": "date"},
         # --- ¡CAMBIO AQUÍ! ---
@@ -259,7 +259,7 @@ FORM_CONFIG = {
     "COMPLEMENTO DE HABERES": {
         "EXPEDIENTE": {"type": "text", "max_chars": 40},
         "CRED.": {"type": "text", "validate": "cedula"},
-        "TIPO": {"type": "select", "options": ["VARIABILIDAD DE VIVIENDA", "FIJACION DE DOMICILIO", "BONIFICACION POR TITULO"]},
+        "TIPO": {"type": "select", "options": ["Variabilidad de Vivienda", "Fijación de Domicilio", "Bonificación por Título", "Resarcimiento de Gastos por Traslado"]},
     },
     "OFICIOS": {
         "EXPEDIENTE": {"type": "text", "max_chars": 40},
@@ -283,4 +283,3 @@ FORM_CONFIG = {
         # Esta hoja no estaba en tu lista de CAMPOS_DE_FORMULARIOS
     },
 }
-
