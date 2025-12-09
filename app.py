@@ -8,6 +8,8 @@ import os
 import html 
 from dotenv import load_dotenv
 from datetime import datetime, time, date, timedelta
+# --- IMPORTACIÓN NUEVA PARA VELOCIDAD ---
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 # --- IMPORTACIÓN DE CONFIGURACIÓN ---
 try:
@@ -62,7 +64,6 @@ def _render_form_fields(gc: gspread.Client, sheet_name: str, existing_data: dict
         current_col = cols[col_index]
 
         try:
-            # Generamos una key única combinando el nombre de la hoja y el campo
             widget_key = f"{sheet_name}_{field_name}_input"
 
             if field_type == "select":
@@ -92,11 +93,8 @@ def _render_form_fields(gc: gspread.Client, sheet_name: str, existing_data: dict
                 elif isinstance(default_value, datetime):
                     date_value = default_value.date()
                 
-                # --- INICIO MODIFICACIÓN (Permitir fechas vacías) ---
-                # Permitimos que el valor inicial sea None (vacío) en lugar de forzar date.today()
                 st_date_value = date_value 
                 
-                # Solo verificamos el rango mínimo si existe una fecha seleccionada
                 if st_date_value is not None and min_date and st_date_value < min_date:
                     st_date_value = min_date
                 
@@ -104,7 +102,6 @@ def _render_form_fields(gc: gspread.Client, sheet_name: str, existing_data: dict
                 if min_date: date_params["min_value"] = min_date
                 
                 data_to_submit[field_name] = current_col.date_input(**date_params)
-                # --- FIN MODIFICACIÓN ---
 
             elif field_type == "time":
                 time_value = None
@@ -162,12 +159,28 @@ def show_add_form(gc: gspread.Client, selected_sheet: str, all_columns: list, cl
                     elif value is None: value = ""
                     new_row.append(str(value))
                 
-                worksheet.insert_row(new_row, index=2, value_input_option='USER_ENTERED')
+                # --- INSERCIÓN EXPLÍCITA EN FILA 2 ---
+                # Usamos row=2 para forzar la posición superior.
+                worksheet.insert_rows([new_row], row=2, value_input_option='USER_ENTERED')
             
-            st.success("¡Guardado exitosamente!")
-            clear_cache_func()
+            # Limpieza agresiva de caché para asegurar que se vea el cambio
+            st.cache_data.clear()
+            st.cache_resource.clear()
+
+            st.success("✅ Registro guardado. Se ordenó insertar en la FILA 2.")
+            
+            # Advertencia sobre comportamiento de Google Sheets
+            st.warning("""
+            ⚠️ **¿El registro aparece al final?**
+            1. Verificá si tienes un **Filtro** activado en Google Sheets (icono de embudo).
+            2. Como la columna **'N°'** se guarda vacía, si la hoja está ordenada por esa columna, el registro podría moverse visualmente al final.
+            3. Intenta recargar esta página web (F5) para ver la tabla actualizada.
+            """)
+            
             set_sheet_mode(selected_sheet, "view") # Volver a modo vista
             st.rerun()
+
+
 
         except Exception as e:
             st.error(f"Error al guardar: {e}")
@@ -256,7 +269,9 @@ VISTA_COLUMNAS_POR_HOJA = {
     "PARTE DE ENFERMO" : ["N°","EXPEDIENTE", "GRADO", "NOMBRES Y APELLIDOS", "CRED.", "AÑO", "INICIO", "DESDE (ULTIMO CERTIFICADO)", "CANTIDAD DE DIAS (ULTIMO CERTIFICADO)", "HASTA (ULTIMO CERTIFICADO)", "FINALIZACION", "CUMPLE 1528??", "DIAS DE INASISTENCIA JUSTIFICADO", "DIAS DE INASISTENCIA A HOY", "CANTIDAD DE DIAS ANTERIORES AL TRAMITE", "CODIGO DE AFECC.", "DIVISION" ],
     "PARTE DE ASISTENCIA FAMILIAR" : ["N°","EXPEDIENTE", "GRADO", "NOMBRES Y APELLIDOS", "CRED.", "AÑO", "INICIO", "DESDE (ULTIMO CERTIFICADO)", "CANTIDAD DE DIAS (ULTIMO CERTIFICADO)", "HASTA (ULTIMO CERTIFICADO)", "FINALIZACION", "CUMPLE 1528??", "DIAS DE INASISTENCIA JUSTIFICADO", "DIAS DE INASISTENCIA A HOY", "CANTIDAD de DIAS ANTERIORES AL TRAMITE", "CODIGO DE AFECC.", "DIVISION" ],
     "ACCIDENTE DE SERVICIO" : ["N°","EXPEDIENTE", "GRADO", "NOMBRES Y APELLIDOS", "CRED.", "AÑO", "INICIO", "DESDE", "CANTIDAD DE DIAS (ULTIMO CERTIFICADO)", "HASTA", "FINALIZACION", "DIVISION", "OBSERVACION"],
-    "CERTIFICADOS MEDICOS": ["N°","GRADO", "Nombre y Apellido", "CREDENCIAL","SELECCIONA EL TIPO DE TRÁMITE", "CANTIDAD DE DIAS DE REPOSO", "INGRESA EL CERTIFICADO", "DIAGNOSTICO", "NOMBRE Y APELLIDO DEL MÉDICO", "ESPECIALIDAD DEL MÉDICO", "MATRÍCULA DEL MÉDICO", "N° de TELÉFONO DE CONTACTO", "PARENTESCO CON EL FAMILIAR", "NOMBRES Y APELLIDOS DEL FAMILIAR", "FECHA DE NACIMIENTO", "FECHA DE CASAMIENTO (solo para el personal casado)"], 
+    
+    "CERTIFICADOS MEDICOS": ["N°","GRADO", "Nombre y Apellido", "CREDENCIAL","SELECCIONA EL TIPO DE TRÁMITE", "FECHA DE INICIO DEL REPOSO","CANTIDAD DE DIAS DE REPOSO", "INGRESA EL CERTIFICADO", "DIAGNOSTICO", "NOMBRE Y APELLIDO DEL MÉDICO", "ESPECIALIDAD DEL MÉDICO", "MATRÍCULA DEL MÉDICO", "N° de TELÉFONO DE CONTACTO", "PARENTESCO CON EL FAMILIAR", "NOMBRES Y APELLIDOS DEL FAMILIAR", "FECHA DE NACIMIENTO", "FECHA DE CASAMIENTO (solo para el personal casado)"], 
+    
     "NOTA DE COMISION MEDICA" : ["N°","NOTA DE D.RR.HH.", "FECHA DE NOTA D.RR.HH.", "TEXTO NOTIFICABLE DE la NOTA", "CRED.", "EXPEDIENTE", "RELACIONADO A . . .", "FECHA DE EVALUACION VIRTUAL", "FECHA DE EVALUACION PRESENCIAL", "FECHA DE REINTEGRO", "1° FECHA DE EVALUACION VIRTUAL", "2° FECHA DE EVALUACIÓN PRESENCIAL", "GRADO", "APELLIDO Y NOMBRE"],
     "IMPUNTUALIDADES": ["N°","EXPEDIENTE", "GRADO", "NOMBRES Y APELLIDOS" , "CRED.", "FECHA", "HORA DE DEBIA INGRESAR", "HORA QUE INGRESO", "AÑO", "N° DE IMPUNTUALIDAD"],
     "COMPLEMENTO DE HABERES" : ["N°","EXPEDIENTE", "GRADO", "NOMBRES Y APELLIDOS" , "CRED.", "TIPO"],
@@ -281,14 +296,16 @@ BOTONES_COPIADO_POR_HOJA = {
 
     "IMPUNTUALIDADES": {"SITUACION DE REVISTA IMPUNTUALIDAD (INFFC)": "SITUACION DE REVISTA IMPUNTUALIDAD (INFFC)", "ORDENATIVA DE IMPUNTUALIDAD (ORDEN)": "ORDENATIVA DE IMPUNTUALIDAD (ORDEN)", "ARCHIVO DE IMPUNTUALIDAD (IF)": "ARCHIVO DE IMPUNTUALIDAD (IF)"},
     
-    "OFICIOS": { "SITUACION DE REVISTA OFICIO (INFFC)": "SITUACION DE REVISTA OFICIO (INFFC)", "SOLICITUD DE NOTIFICACION (INFFC)": "SOLICITUD DE NOTIFICACION (INFFC)", "ELEVACION DE NOTIFICACION (INFFC)": "ELEVACION DE NOTIFICACION (INFFC)", "ARCHIVO IF": "ARCHIVO IF", "ANOTACION D.L.P." : "ANOTACION D.L.P."},
+    "OFICIOS": { "SITUACION DE REVISTA OFICIO (INFFC)": "SITUACION DE REVISTA OFICIO (INFFC)", "REMISION DE OFICIO (IF)": "REMISION DE OFICIO (IF)", "SOLICITUD DE NOTIFICACION (IF)": "SOLICITUD DE NOTIFICACION (INFFC)", "INFORME DE ELEVACION DE NOTIFICACION (INFFC)": "INFORME DE ELEVACION DE NOTIFICACION (INFFC)", "REMISION DE NOTIFICACION (INFFC)":"REMISION DE NOTIFICACION (INFFC)","ARCHIVO IF": "ARCHIVO IF", "ANOTACION D.L.P." : "ANOTACION D.L.P."},
 
-    "INASISTENCIAS": { "SITUACION DE REVISTA FALTA CON/SIN AVISO (INFFC)": "SITUACION DE REVISTA FALTA CON/SIN AVISO (INFFC)", "ORDENATIVA DE FALTACON/SIN AVISO (ORDEN)": "ORDENATIVA DE FALTACON/SIN AVISO (ORDEN)", "SITUACION DE REVISTA ELEVACION FSA/FCA (INFFC)":"SITUACION DE REVISTA ELEVACION FSA/FCA (INFFC)", "ELVACION FCA/FSC (IF)":"ELVACION FCA/FSC (IF)", "ARCHIVO (IF)": "ARCHIVO (IF)" }
+    "INASISTENCIAS": { "SITUACION DE REVISTA FALTA CON/SIN AVISO (INFFC)": "SITUACION DE REVISTA FALTA CON/SIN AVISO (INFFC)", "ORDENATIVA DE FALTACON/SIN AVISO (ORDEN)": "ORDENATIVA DE FALTACON/SIN AVISO (ORDEN)", "SITUACION DE REVISTA ELEVACION FSA/FCA (INFFC)":"SITUACION DE REVISTA ELEVACION FSA/FCA (INFFC)", "ELVACION FCA/FSC (IF)":"ELVACION FCA/FSC (IF)", "ARCHIVO (IF)": "ARCHIVO (IF)" }, 
 
+    "CERTIFICADOS MEDICOS" : {"REMISION DE CERTIFICADO (NOTA)": "REMISION DE CERTIFICADO (NOTA)"},
+    "CURSOS": {"SITUACION DE REVISTA POR CURSO (INFFC)": "SITUACION DE REVISTA POR CURSO (INFFC)", "ELEVACION DE CURSO (IF)": "ELEVACION DE CURSO (IF)", "ADECUAR EXPEDIENTE PARA COBRAR TITULO (INFFC)": "ADECUAR EXPEDIENTE PARA COBRAR TITULO (INFFC)", "ARCHIVO DE CURSO (IF)": "ARCHIVO DE CURSO (IF)", "PICU PARA DLP": "PICU PARA DLP"},
+    "SANCION":{"CUMPLIO EN TIEMPO Y FORMA (INFFC)": "CUMPLIO EN TIEMPO Y FORMA (INFFC)","RECHAZO POR ERRORES (INFFC)": "RECHAZO POR ERRORES (INFFC)",  "SOLICITUD DE INTERVENCION DE INSTANCIA SUPERIOR (INFFC)": "SOLICITUD DE INTERVENCION DE INSTANCIA SUPERIOR (INFFC)", "ARCHIVO DE SANCION (IF)": "ARCHIVO DE SANCION (IF)", "PICU PARA DLP":"PICU PARA DLP"},
+    "COMPLEMENTO DE HABERES":{"SITUACION DE REVISTA (INFFC)":"SITUACION DE REVISTA (INFFC)", "ELEVACION (IF)":"ELEVACION (IF)", "SOLICITUD DE NOTIFICACION (INFFC)":"SOLICITUD DE NOTIFICACION (INFFC)", "ARCHIVO (IF)":"ARCHIVO (IF)","PICU PARA DLP":"PICU PARA DLP"}
 }
 
-# --- MODIFICACIÓN DE AUTENTICACIÓN ---
-# Hacemos la autenticación "a prueba de fallos" de st.secrets
 @st.cache_resource
 def get_gspread_client():
     creds_data = None
@@ -330,26 +347,47 @@ def _clean_headers(headers):
         new_headers.append(f"{header}_{counts[header]}" if counts[header] > 1 else header)
     return new_headers
 
-@st.cache_data(ttl=600)
-def load_data_from_sheets(_gc: gspread.Client):
+# --- CARGA DE DATOS (OPTIMIZADA) ---
+@st.cache_data
+def get_available_sheets(_gc: gspread.Client):
+    """Obtiene la lista de hojas disponibles que coinciden con la configuración."""
     try:
         sh = _gc.open_by_key(GOOGLE_SHEET_ID)
         worksheets = sh.worksheets()
-        data_frames = {}
-        for ws in worksheets:
-            if ws.title == "LISTAS" or ws.title not in VISTA_COLUMNAS_POR_HOJA: continue
-            data = ws.get_all_values()
-            if not data: continue
-            
-            headers = _clean_headers(data[0])
-            rows = data[1:]
-            df_full = pl.DataFrame(rows, schema=headers, orient="row")
-            
-            col_vista = [c for c in VISTA_COLUMNAS_POR_HOJA.get(ws.title, []) if c in df_full.columns]
-            data_frames[ws.title] = {"full": df_full, "view": df_full.select(col_vista)}
-        return data_frames
+        # Filtramos solo las hojas que nos interesan y existen
+        valid_sheets = [ws.title for ws in worksheets if ws.title in VISTA_COLUMNAS_POR_HOJA]
+        return valid_sheets
     except Exception as e:
-        st.error(f"Error al cargar datos: {e}")
+        st.error(f"Error al obtener lista de hojas: {e}")
+        return []
+
+def _process_single_sheet(ws_title, ws_data, vista_cols):
+    """Procesa los datos crudos de una hoja y devuelve el diccionario estructurado."""
+    if not ws_data:
+        return None
+    
+    headers = _clean_headers(ws_data[0])
+    rows = ws_data[1:]
+    df_full = pl.DataFrame(rows, schema=headers, orient="row")
+    
+    col_vista = [c for c in vista_cols if c in df_full.columns]
+    return {"full": df_full, "view": df_full.select(col_vista)}
+
+@st.cache_data(show_spinner=False) # Sin TTL para que no recargue solo
+def load_sheet_data(_gc: gspread.Client, sheet_name: str):
+    """Carga los datos de una sola hoja."""
+    try:
+        sh = _gc.open_by_key(GOOGLE_SHEET_ID)
+        worksheet = sh.worksheet(sheet_name)
+        data = worksheet.get_all_values()
+        
+        return _process_single_sheet(
+            sheet_name, 
+            data, 
+            VISTA_COLUMNAS_POR_HOJA.get(sheet_name, [])
+        )
+    except Exception as e:
+        st.error(f"Error al cargar la hoja '{sheet_name}': {e}")
         return None
 
 # --- MAIN APP ---
@@ -359,23 +397,19 @@ def main():
     gc = get_gspread_client()
     if not gc: st.stop()
 
-    sheet_data = load_data_from_sheets(gc)
-    if not sheet_data:
-        st.error("Fallo al cargar datos.")
-        st.stop()
-
-    sheet_names = list(sheet_data.keys())
+    # 1. Obtener lista de hojas (rápido)
+    sheet_names = get_available_sheets(gc)
     if not sheet_names:
         st.warning("No hay hojas disponibles.")
         return
 
-    # --- NUEVO SELECTOR MULTIPLE ---
+    # 2. Selector de Hojas
     st.markdown("### Selección de Hojas de Trabajo")
     selected_sheets = st.multiselect(
-        "Selecciona hasta 4 hojas para visualizar simultáneamente:",
+        "Selecciona hasta 6 hojas para visualizar simultáneamente:",
         options=sheet_names,
         default=[sheet_names[0]] if sheet_names else None,
-        max_selections=4,
+        max_selections=6,
         key="multi_sheet_selector"
     )
     st.markdown("---")
@@ -384,9 +418,16 @@ def main():
         st.info("👆 Por favor, selecciona al menos una hoja arriba.")
         return
 
-    # --- BUCLE PRINCIPAL: Renderizar cada hoja seleccionada ---
+    # 3. Cargar y mostrar SOLO las hojas seleccionadas
     for sheet_name in selected_sheets:
         
+        # Carga bajo demanda
+        sheet_data_dict = load_sheet_data(gc, sheet_name)
+        
+        if not sheet_data_dict:
+            st.error(f"No se pudieron cargar los datos de {sheet_name}")
+            continue
+
         # Inicializar estado para esta hoja específica
         init_sheet_state(sheet_name)
         current_mode = get_sheet_mode(sheet_name)
@@ -396,18 +437,18 @@ def main():
             # Encabezado con color distintivo o separador
             st.markdown(f"## 📂 Hoja: `{sheet_name}`")
             
-            df_full = sheet_data[sheet_name]["full"]
-            df_view = sheet_data[sheet_name]["view"]
+            df_full = sheet_data_dict["full"]
+            df_view = sheet_data_dict["view"]
             all_columns = df_full.columns # Polars columns list
             
             # --- LÓGICA DE MODOS POR HOJA ---
             if current_mode == "add":
-                show_add_form(gc, sheet_name, all_columns, load_data_from_sheets.clear)
+                show_add_form(gc, sheet_name, all_columns, load_sheet_data.clear)
             
             elif current_mode == "edit":
                 row_data = get_sheet_edit_data(sheet_name)
                 if row_data:
-                    show_edit_form(gc, row_data, sheet_name, all_columns, load_data_from_sheets.clear)
+                    show_edit_form(gc, row_data, sheet_name, all_columns, load_sheet_data.clear)
                 else:
                     st.error("Error de estado: No hay datos para editar.")
                     set_sheet_mode(sheet_name, "view")
@@ -423,7 +464,7 @@ def main():
                         st.rerun()
                 with col_reload:
                     if st.button("🔄 Recargar", key=f"btn_reload_{sheet_name}"):
-                        load_data_from_sheets.clear()
+                        load_sheet_data.clear()
                         st.rerun()
 
                 # Filtros (Namespace único por hoja)
@@ -482,33 +523,29 @@ def main():
                             
                             st.info(f"Fila seleccionada: {id_val}")
                             
-                            # --- MODIFICACIÓN: Botones de Editar y Eliminar ---
+                            # Botonera de acciones sobre la fila
                             col_edit, col_delete = st.columns([0.3, 0.3])
                             with col_edit:
-                                if st.button(f"✏️ Editar", key=f"btn_edit_sel_{sheet_name}"):
+                                if st.button(f"✏️ Editar", key=f"btn_edit_sel_{sheet_name}_{id_val}"):
                                     set_sheet_mode(sheet_name, "edit", full_row_dict)
                                     st.rerun()
                             
                             with col_delete:
-                                # Botón Eliminar con key única
                                 if st.button(f"🗑️ Eliminar", key=f"btn_delete_sel_{sheet_name}_{id_val}", type="primary"):
                                     try:
                                         with st.spinner("Eliminando registro..."):
-                                            # Lógica de eliminación
                                             sh = gc.open_by_key(GOOGLE_SHEET_ID)
                                             worksheet = sh.worksheet(sheet_name)
-                                            # Buscar la celda con el ID exacto en la columna 1
                                             cell = worksheet.find(str(id_val), in_column=1)
                                             if cell:
                                                 worksheet.delete_rows(cell.row)
                                                 st.success("✅ Fila eliminada correctamente.")
-                                                load_data_from_sheets.clear()
+                                                load_sheet_data.clear()
                                                 st.rerun()
                                             else:
                                                 st.error("❌ No se encontró la fila en Google Sheets.")
                                     except Exception as e:
                                         st.error(f"❌ Error al eliminar: {e}")
-                            # --- FIN MODIFICACIÓN ---
 
                             # Copiado Manual
                             if sheet_name in BOTONES_COPIADO_POR_HOJA:
