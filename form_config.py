@@ -242,6 +242,7 @@ FORM_CONFIG = {
         "TEXTO NOTIFICABLE DE LA NOTA": {"type": "text_area"},
         "CRED.": {"type": "text", "validate": "cedula"}, # Corregido, estaba anidado
         "EXPEDIENTE": {"type": "text"},
+        "RELACIONADO A . . .": {"type": "select", "options": ["EVALUACIÓN VIRTUAL", "EVALUACIÓN PRESENCIAL", "REINTEGRO", "EVALUACIÓN VIRTUAL y EVALUACIÓN PRESENCIAL"]},
         "FECHA DE EVALUACION VIRTUAL": {"type": "date"},
         "FECHA DE EVALUACION PRESENCIAL": {"type": "date"},
         "FECHA DE REINTEGRO": {"type": "date"},
@@ -283,3 +284,4 @@ FORM_CONFIG = {
         # Esta hoja no estaba en tu lista de CAMPOS_DE_FORMULARIOS
     },
 }
+
