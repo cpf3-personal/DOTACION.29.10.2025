@@ -174,9 +174,8 @@ FORM_CONFIG = {
     "DISPONIBILIDAD": { # "DISPONIBILidad" corregido a "DISPONIBILIDAD"
         "EXPEDIENTE": {"type": "text", "max_chars": 40},
         "CRED.": {"type": "text", "validate": "cedula"},
-        "DESDE": {"type": "date"},
-        "DIAS": {"type": "text", "validate": "numeric"},
-        "FINALIZACION": {"type": "date"},
+        "INICIO": {"type": "date"},
+        "MESES": {"type": "text", "validate": "numeric"},        
     },
     "LICENCIAS": {
         "EXPEDIENTE": {"type": "text", "max_chars": 40},
@@ -238,7 +237,7 @@ FORM_CONFIG = {
     },
     "NOTA DE COMISION MEDICA": {
         "NOTA DE D.RR.HH.": {"type": "text"},
-        "FECHA DE NOTA D.RR.HH.": {"type": "date"},
+        "FECHA DE NOTA DE D.RR.HH.": {"type": "date"},
         "TEXTO NOTIFICABLE DE LA NOTA": {"type": "text_area"},
         "CRED.": {"type": "text", "validate": "cedula"}, # Corregido, estaba anidado
         "EXPEDIENTE": {"type": "text"},
@@ -284,4 +283,3 @@ FORM_CONFIG = {
         # Esta hoja no estaba en tu lista de CAMPOS_DE_FORMULARIOS
     },
 }
-
