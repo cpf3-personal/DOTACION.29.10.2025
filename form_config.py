@@ -254,7 +254,7 @@ FORM_CONFIG = {
         "FECHA": {"type": "date"},
         "HORA DE DEBIA INGRESAR": {"type": "time"},
         "HORA QUE INGRESO": {"type": "time"},
-        "N° DE IMPUNTUALIDAD": {"type": "select", "options": lambda conn: get_options_from_sheet(conn, "I2:I16")},
+        "N° DE IMPUNTUALIDAD": {"type": "select", "options": lambda conn: get_options_from_sheet(conn, "I1:I16")},
     },
     "COMPLEMENTO DE HABERES": {
         "EXPEDIENTE": {"type": "text", "max_chars": 40},
@@ -283,3 +283,4 @@ FORM_CONFIG = {
         # Esta hoja no estaba en tu lista de CAMPOS_DE_FORMULARIOS
     },
 }
+
