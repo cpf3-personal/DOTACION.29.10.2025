@@ -180,7 +180,7 @@ FORM_CONFIG = {
     "LICENCIAS": {
         "EXPEDIENTE": {"type": "text", "max_chars": 40},
         "CRED.": {"type": "text", "validate": "cedula"},
-        "TIPO DE LIC": {"type": "select", "options": lambda conn: get_options_from_sheet(conn, "E1:E30")},
+        "TIPO DE LICENCIA": {"type": "select", "options": lambda conn: get_options_from_sheet(conn, "E1:E30")},
         "DIAS": {"type": "text", "validate": "numeric"},
         "DESDE": {"type": "date"},
         # --- ¡CAMBIO AQUÍ! ---
@@ -283,4 +283,5 @@ FORM_CONFIG = {
         # Esta hoja no estaba en tu lista de CAMPOS_DE_FORMULARIOS
     },
 }
+
 
