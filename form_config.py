@@ -279,9 +279,18 @@ FORM_CONFIG = {
         "FECHA DE LA FALTA": {"type": "date"}, # Asumo fecha
         "N° FALTA CON/SIN AVISO": {"type": "select", "options": lambda conn: get_options_from_sheet(conn, "V1:V20")},
     },
+    "PASAJES": {
+        "EXPEDIENTE": {"type": "text", "max_chars": 40},
+        "CRED.": {"type": "text", "validate": "cedula"},
+        "VIAJE POR": {"type": "select", "options": ["COMISION MEDICA", "TRASLADO", "CURDO / COMISION DE SERV."]},
+        "ACTO DEMINISTRATIVO QUE AUTORIZA": {"type": "text", "max_chars": 40},
+        "FECHA DE PRESENTACION": {"type": "date"},
+        "AEREA O TERRESTRE": {"type": "select", "options": ["TERRESTRE", "AEREA"]},
+    },
     "MESA DE ENTRADA": {
         # Esta hoja no estaba en tu lista de CAMPOS_DE_FORMULARIOS
     },
 }
+
 
 
