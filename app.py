@@ -10,6 +10,7 @@ from dotenv import load_dotenv
 from datetime import datetime, time, date, timedelta
 # --- IMPORTACIÓN NUEVA PARA VELOCIDAD ---
 from concurrent.futures import ThreadPoolExecutor, as_completed
+import io # Para manejo de buffers de memoria (Excel)
 
 # --- IMPORTACIÓN DE CONFIGURACIÓN ---
 try:
@@ -60,7 +61,10 @@ def _render_form_fields(gc: gspread.Client, sheet_name: str, existing_data: dict
 
     for field_name, config in form_config.items():
         field_type = config.get("type", "text")
-        default_value = existing_data.get(field_name) if existing_data else None
+        if existing_data:
+            default_value = existing_data.get(field_name)
+        else:
+            default_value = config.get("value")
         current_col = cols[col_index]
 
         try:
@@ -78,8 +82,9 @@ def _render_form_fields(gc: gspread.Client, sheet_name: str, existing_data: dict
                 data_to_submit[field_name] = current_col.selectbox(field_name, options, index=default_index, key=widget_key)
             
             elif field_type == "date":
-                min_year = config.get("min_year")
-                min_date = date(min_year, 1, 1) if min_year else None
+                # Por defecto permitimos desde 1900 para "dejarlo libre"
+                min_year = config.get("min_year", 1900)
+                min_date = date(min_year, 1, 1)
                 
                 date_value = None
                 if isinstance(default_value, str) and default_value:
@@ -95,11 +100,16 @@ def _render_form_fields(gc: gspread.Client, sheet_name: str, existing_data: dict
                 
                 st_date_value = date_value 
                 
-                if st_date_value is not None and min_date and st_date_value < min_date:
+                if st_date_value is not None and st_date_value < min_date:
                     st_date_value = min_date
                 
-                date_params = {"label": field_name, "value": st_date_value, "format": "DD/MM/YYYY", "key": widget_key}
-                if min_date: date_params["min_value"] = min_date
+                date_params = {
+                    "label": field_name, 
+                    "value": st_date_value, 
+                    "format": "DD/MM/YYYY", 
+                    "key": widget_key,
+                    "min_value": min_date
+                }
                 
                 data_to_submit[field_name] = current_col.date_input(**date_params)
 
@@ -253,7 +263,7 @@ SCOPES = ["https://www.googleapis.com/auth/spreadsheets", "https://www.googleapi
 
 # (Aquí van tus diccionarios VISTA_COLUMNAS_POR_HOJA y BOTONES_COPIADO_POR_HOJA tal cual estaban)
 VISTA_COLUMNAS_POR_HOJA = {
-    "DOTACION": ["N°", "COD", "GRADO", "APELLIDOS", "NOMBRES","CRED.", "SITUACION", "MASC / FEM", "INGRESO", "DISP. ING.", "FECHA DISP. ING", "FECHA ING. C.P.F.NOA", "DISP.", "FECHA DE LA DISP.", "FECHA NAC.", "EDAD", "D.N.I.", "C.U.I.L.", "ESTADO CIVIL", "FECHA CASAM.", "JEFATURA / DIRECCION", "DEPARTAMENTO / DIVISION", "SECCION", "FUNCION", "ORDEN INTERNA", "A PARTIR DE", "EXPEDIENTE DE FUNCION", "DEST. ANT. UNIDAD", "ESCALAFON", "PROFESION", "DOMICILIO", "LOCALIDAD", "PROVINCIA", "TELEFONO", "USUARIO G.D.E.", "CORREO ELEC", "REPARTICIÓN", "SECTOR", "JERARQUIA"],
+    "DOTACION": ["N°", "COD", "GRADO", "APELLIDOS", "NOMBRES","CRED.", "SITUACION", "MASC / FEM", "INGRESO", "DISP. ING.", "FECHA DISP. ING", "FECHA ING. C.P.F.NOA", "DISP.", "FECHA DE LA DISP.", "FECHA NAC.", "EDAD", "D.N.I.", "C.U.I.L.", "ESTADO CIVIL", "FECHA CASAM.", "JEFATURA / DIRECCION", "DEPARTAMENTO / DIVISION", "SECCION", "FUNCION", "ORDEN INTERNA", "A PARTIR DE", "EXPEDIENTE DE FUNCION", "DEST. ANT. UNIDAD", "ESCALAFON", "PROFESION", "DOMICILIO", "LOCALIDAD", "PROVINCIA", "TELEFONO", "USUARIO G.D.E.", "CORREO ELEC", "REPARTICIÓN", "SECTOR", "FECHA DE EGRESO", "DESTINO","DISP. DE EGRESO","FECHA DISPOSICION","NOTA REMISION DE D.L.P.", "JERARQUIA"],
     
     "FUNCIONES": ["N°","EXPEDIENTE", "GRADO", "NOMBRES Y APELLIDOS", "CRED.", "JEFATURA / DIRECCION", "DIVISION / DEPARTAMENTO", "SECCION", "CARGO", "FUNCION DEL B.P.N 700", "ORDEN INTERNA", "A PARTIR DE", "CAMBIO DE DEPENDENCIA", "TITULAR – INTERINO - A CARGO", "HORARIO", "TURNO"],
     
@@ -266,18 +276,23 @@ VISTA_COLUMNAS_POR_HOJA = {
     "DISPONIBILIDAD" : ["N°","EXPEDIENTE", "GRADO", "NOMBRES Y APELLIDOS" , "CRED.", "INICIO", "MESES", "FINALIZACION DE DISPO.", "PASE A RETIRO"],
     "LICENCIAS": ["N°","EXPEDIENTE", "GRADO", "NOMBRES Y APELLIDOS", "CRED.", "TIPO DE LICENCIA", "DIAS", "DESDE", "HASTA", "AÑO", "PASAJES" , "DIAS POR VIAJE", "REINTEGRO","LUGAR" ,"REINTEGRADO SI/NO"],
     "LACTANCIA": ["N°","EXPEDIENTE", "GRADO", "NOMBRES Y APELLIDOS", "CRED.", "NOMBRE COMPLETO HIJO/A", "FECHA DE NACIMIENTO", "EXPEDIENTE DONDE LO INFORMO", "FECHAS", "PRORROGA FECHA"],
-    "PARTE DE ENFERMO" : ["N°","EXPEDIENTE", "GRADO", "NOMBRES Y APELLIDOS", "CRED.","MOTIVO" , "AÑO", "INICIO", "DESDE (ULTIMO CERTIFICADO)", "CANTIDAD DE DIAS (ULTIMO CERTIFICADO)", "HASTA (ULTIMO CERTIFICADO)", "FINALIZACION", "CUMPLE 1528??", "DIAS DE INASISTENCIA JUSTIFICADO", "DIAS DE INASISTENCIAS A HOY", "DIAS DE INASISTENCIAS ANTERIORES", "CODIGO DE AFECC.", "DIVISION" ],
-    "PARTE DE ASISTENCIA FAMILIAR" : ["N°","EXPEDIENTE", "GRADO", "NOMBRES Y APELLIDOS", "CRED.", "AÑO", "INICIO", "DESDE (ULTIMO CERTIFICADO)", "CANTIDAD DE DIAS (ULTIMO CERTIFICADO)", "HASTA (ULTIMO CERTIFICADO)", "FINALIZACION", "CUMPLE 1528??", "DIAS DE INASISTENCIA JUSTIFICADO", "DIAS DE INASISTENCIA A HOY", "DIAS DE INASISTENCIAS ANTERIORES", "CODIGO DE AFECC.", "DIVISION" ],
+    "PARTE DE ENFERMO" : ["N°","EXPEDIENTE", "GRADO", "NOMBRES Y APELLIDOS", "CRED.", "MOTIVO", "AÑO", "INICIO", "DESDE (ULTIMO CERTIFICADO)", "CANTIDAD DE DIAS (ULTIMO CERTIFICADO)", "HASTA (ULTIMO CERTIFICADO)", "FINALIZACION", "CUMPLE 1528??", "DIAS DE INASISTENCIA JUSTIFICADO", "DIAS DE INASISTENCIA A HOY", "CANTIDAD DE DIAS ANTERIORES AL TRAMITE", "CODIGO DE AFECC.", "DIVISION" ],
+    "PARTE DE ASISTENCIA FAMILIAR" : ["N°","EXPEDIENTE", "GRADO", "NOMBRES Y APELLIDOS", "CRED.", "AÑO", "INICIO", "DESDE (ULTIMO CERTIFICADO)", "CANTIDAD DE DIAS (ULTIMO CERTIFICADO)", "HASTA (ULTIMO CERTIFICADO)", "FINALIZACION", "CUMPLE 1528??", "DIAS DE INASISTENCIA JUSTIFICADO", "DIAS DE INASISTENCIA A HOY", "CANTIDAD de DIAS ANTERIORES AL TRAMITE", "CODIGO DE AFECC.", "DIVISION" ],
     "ACCIDENTE DE SERVICIO" : ["N°","EXPEDIENTE", "GRADO", "NOMBRES Y APELLIDOS", "CRED.", "AÑO", "INICIO", "DESDE", "CANTIDAD DE DIAS (ULTIMO CERTIFICADO)", "HASTA", "FINALIZACION", "DIVISION", "OBSERVACION"],
     "CERTIFICADOS MEDICOS": ["N°","GRADO", "Nombre y Apellido", "CREDENCIAL","SELECCIONA EL TIPO DE TRÁMITE", "FECHA DE INICIO DEL REPOSO","CANTIDAD DE DIAS DE REPOSO", "INGRESA EL CERTIFICADO", "DIAGNOSTICO", "NOMBRE Y APELLIDO DEL MÉDICO", "ESPECIALIDAD DEL MÉDICO", "MATRÍCULA DEL MÉDICO", "N° DE TELÉFONO DE CONTACTO", "PARENTESCO CON EL FAMILIAR", "NOMBRES Y APELLIDOS DEL FAMILIAR", "FECHA DE NACIMIENTO", "FECHA DE CASAMIENTO (solo para el personal casado)"], 
-    "NOTA DE COMISION MEDICA" : ["N°","NOTA DE D.RR.HH.", "GRADO", "NOMBRES Y APELLIDOS" , "CRED." , "FECHA DE NOTA DE D.RR.HH.", "TEXTO NOTIFICABLE DE LA NOTA",  "EXPEDIENTE", "RELACIONADO A . . .", "FECHA DE EVALUACION VIRTUAL", "FECHA DE EVALUACION PRESENCIAL", "FECHA DE REINTEGRO", "1° FECHA DE EVALUACION VIRTUAL", "2° FECHA DE EVALUACIÓN PRESENCIAL"],
+    "NOTA DE COMISION MEDICA" : ["N°","NOTA DE D.RR.HH.", "FECHA DE NOTA D.RR.HH.", "TEXTO NOTIFICABLE DE LA NOTA", "CRED.", "EXPEDIENTE", "RELACIONADO A . . .", "FECHA DE EVALUACION VIRTUAL", "FECHA DE EVALUACION PRESENCIAL", "FECHA DE REINTEGRO", "1° FECHA DE EVALUACION VIRTUAL", "2° FECHA DE EVALUACIÓN PRESENCIAL", "GRADO", "APELLIDO Y NOMBRE"],
     "IMPUNTUALIDADES": ["N°","EXPEDIENTE", "GRADO", "NOMBRES Y APELLIDOS" , "CRED.", "FECHA", "HORA DE DEBIA INGRESAR", "HORA QUE INGRESO", "AÑO", "N° DE IMPUNTUALIDAD"],
     "COMPLEMENTO DE HABERES" : ["N°","EXPEDIENTE", "GRADO", "NOMBRES Y APELLIDOS" , "CRED.", "TIPO"],
     "OFICIOS" : ["N°","EXPEDIENTE", "GRADO", "NOMBRES Y APELLIDOS", "CRED.", "PICU_OFICIO", "FECHA del OFICIO"],
     "NOTAS DAI" : ["N°","NOTA DAI", "GRADO", "NOMBRES Y APELLIDOS", "CRED.", "PICU_NOTA_DAI", "FECHA de NOTA DAI"],
     "INASISTENCIAS" : ["N°","EXPEDIENTE", "GRADO", "NOMBRES Y APELLIDOS", "CRED.", "FECHA DE LA FALTA", "MOTIVO"],
     "MESA DE ENTRADA": ["N°","Número Expediente", "Código Trámite", "Descripción del Trámite", "Motivo"],
-    "PASAJES": ["N°","EXPEDIENTE", "GRADO", "NOMBRES Y APELLIDOS", "CRED.", "VIAJE POR", "ACTO DEMINISTRATIVO QUE AUTORIZA"]
+    "PASAJES": ["N°","EXPEDIENTE", "GRADO", "NOMBRES Y APELLIDOS", "CRED.", "VIAJE POR", "ACTO DEMINISTRATIVO QUE AUTORIZA"],
+    "SUSPENSION": ["N°","EXPEDIENTE", "GRADO", "NOMBRES Y APELLIDOS", "CRED.", "INICIO", "FINALIZACION", "CANTIDAD DE DIAS"],
+    "RENUNCIA": ["N°","EXPEDIENTE", "GRADO", "NOMBRES Y APELLIDOS", "CRED.", "INICIO", "ACEPTADA / PENDIENTE"],
+    "INASISTENCIA_INJUSTIFICADA": ["N°","EXPEDIENTE", "GRADO", "NOMBRES Y APELLIDOS", "CRED.", "INICIO", "REINTEGRO", "CANTIDAD DE DIAS","INSTRUCTOR" ],
+    "FALLECIMIENTO": ["N°","EXPEDIENTE", "GRADO", "NOMBRES Y APELLIDOS", "CRED.", "FECHA DEL DECESO", "SIN RESOLUCION  / CON RESOLUCION" ],
+    "CAPACIDAD_LABORAL": ["N°","EXPEDIENTE", "GRADO", "NOMBRES Y APELLIDOS", "CRED.", "INICIO", "ASISTE", "REINTEGRO", "CANTIDAD DE DIAS"],
 }
 
 BOTONES_COPIADO_POR_HOJA = {
@@ -363,15 +378,54 @@ def get_available_sheets(_gc: gspread.Client):
         st.error(f"Error al obtener lista de hojas: {e}")
         return []
 
-def _process_single_sheet(ws_title, ws_data, vista_cols):
-    """Procesa los datos crudos de una hoja y devuelve el diccionario estructurado."""
+def _process_single_sheet(sheet_name, ws_data, vista_cols):
+    """Procesa los datos crudos de una hoja y devuelve el diccionario estructurado con tipos correctos."""
     if not ws_data:
         return None
     
     headers = _clean_headers(ws_data[0])
     rows = ws_data[1:]
+    
+    # 1. Crear DataFrame base (todo string)
     df_full = pl.DataFrame(rows, schema=headers, orient="row")
     
+    # 2. Aplicar conversiones de tipos según FORM_CONFIG
+    # Obtenemos la config para esta hoja
+    # NOTA: FORM_CONFIG usa nombres de columnas "humanos", que coinciden con los headers del sheet
+    form_fields = FORM_CONFIG.get(sheet_name, {})
+    
+    projection = []
+    
+    for col_name in df_full.columns:
+        # Por defecto dejamos la columna tal cual
+        expr = pl.col(col_name)
+        
+        # Buscamos si este col_name tiene config
+        if col_name in form_fields:
+            field_config = form_fields[col_name]
+            f_type = field_config.get("type")
+            f_validate = field_config.get("validate")
+            
+            # --- Conversión de FECHAS ---
+            if f_type == "date":
+                # Intentamos parsear DD/MM/YYYY. Si falla, queda null (strict=False)
+                # fill_null para mantener el string original si no parsea es dificil si cambiamos tipo.
+                # Mejor estrategia: cast a Date. Los errores serán null.
+                expr = pl.col(col_name).str.strptime(pl.Date, "%d/%m/%Y", strict=False)
+            
+            # --- Conversión de NUMÉRICOS ---
+            elif f_validate in ["numeric", "max_30", "rango_1_4", "cedula", "dni"]:
+                # Limpiamos puntos y comas para que "30.000" sea 30000 y casteamos
+                expr = pl.col(col_name).str.replace_all(r"[.,]", "").str.strip_chars().cast(pl.Int64, strict=False)
+        
+        projection.append(expr)
+        
+    # Aplicamos la proyección de tipos
+    try:
+        df_full = df_full.with_columns(projection)
+    except Exception as e:
+        st.warning(f"Error al convertir tipos en {sheet_name}: {e}")
+
     col_vista = [c for c in vista_cols if c in df_full.columns]
     return {"full": df_full, "view": df_full.select(col_vista)}
 
@@ -391,6 +445,17 @@ def load_sheet_data(_gc: gspread.Client, sheet_name: str):
     except Exception as e:
         st.error(f"Error al cargar la hoja '{sheet_name}': {e}")
         return None
+
+def to_excel(df: pl.DataFrame):
+    """Convierte un DataFrame de Polars a un archivo Excel en memoria."""
+    output = io.BytesIO()
+    try:
+        df.write_excel(output)
+    except Exception as e:
+        # Fallback por si acaso
+        print(f"Error escribiendo excel: {e}")
+        return None
+    return output.getvalue()
 
 # --- MAIN APP ---
 def main():
@@ -483,9 +548,10 @@ def main():
                 # Filtros (Namespace único por hoja)
                 df_filtered = df_view.clone()
                 with st.expander(f"🔍 Filtros para {sheet_name}", expanded=False):
-                    text_cols = [c for c in df_filtered.columns if df_filtered[c].dtype == pl.String]
+                    # Permitimos filtrar por columnas de Texto, Numéricas y FECHAS
+                    filterable_cols = [c for c in df_filtered.columns if df_filtered[c].dtype in [pl.String, pl.Int64, pl.Float64, pl.Date]]
                     
-                    sel_cols = st.multiselect("Columnas:", text_cols, default=text_cols[:6] if len(text_cols)>1 else text_cols, key=f"cols_{sheet_name}")
+                    sel_cols = st.multiselect("Columnas:", filterable_cols, default=filterable_cols[:6] if len(filterable_cols)>1 else filterable_cols, key=f"cols_{sheet_name}")
                     cond = st.selectbox("Condición:", ["Contiene texto", "Celda Vacía", "Celda No Vacía"], key=f"cond_{sheet_name}")
                     
                     term = ""
@@ -494,13 +560,14 @@ def main():
 
                     if sel_cols:
                         if cond == "Celda Vacía":
-                            expr = [(pl.col(c).is_null()) | (pl.col(c) == "") for c in sel_cols]
+                            expr = [(pl.col(c).is_null()) | (pl.col(c).cast(pl.Utf8) == "") for c in sel_cols]
                             df_filtered = df_filtered.filter(pl.any_horizontal(expr))
                         elif cond == "Celda No Vacía":
-                            expr = [(pl.col(c).is_not_null()) & (pl.col(c) != "") for c in sel_cols]
+                            expr = [(pl.col(c).is_not_null()) & (pl.col(c).cast(pl.Utf8) != "") for c in sel_cols]
                             df_filtered = df_filtered.filter(pl.any_horizontal(expr))
                         elif term:
-                            expr = [pl.col(c).fill_null("").str.contains(f"(?i){re.escape(term)}") for c in sel_cols]
+                            # Casteamos todo a string para buscar texto
+                            expr = [pl.col(c).cast(pl.Utf8).fill_null("").str.contains(f"(?i){re.escape(term)}") for c in sel_cols]
                             df_filtered = df_filtered.filter(pl.any_horizontal(expr))
 
                 # Estadísticas en Sidebar (Acumulativas)
@@ -511,8 +578,20 @@ def main():
 
                 # Tabla
                 st.write(f"Mostrando **{df_filtered.height}** filas.")
+                
+                # Configuración de columnas para formato de fecha
+                column_config = {}
+                for col_name in df_filtered.columns:
+                    if df_filtered[col_name].dtype == pl.Date:
+                        column_config[col_name] = st.column_config.DateColumn(
+                            col_name,
+                            format="DD/MM/YYYY",
+                            step=1
+                        )
+
                 selection = st.dataframe(
                     df_filtered,
+                    column_config=column_config,
                     selection_mode="single-row",
                     on_select="rerun",
                     hide_index=True,
@@ -520,10 +599,20 @@ def main():
                     key=f"grid_{sheet_name}"
                 )
 
+                # Botón de Descarga Excel
+                st.download_button(
+                    label="📥 Descargar Excel",
+                    data=to_excel(df_filtered),
+                    file_name=f"{sheet_name}_{datetime.now().strftime('%Y-%m-%d')}.xlsx",
+                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    key=f"btn_xlsx_{sheet_name}"
+                )
+
                 # Acción de Selección
                 if selection.selection["rows"]:
                     try:
                         sel_idx = selection.selection["rows"][0]
+                        # ... resto del código ...
                         sel_row_view = df_filtered.row(sel_idx, named=True)
                         id_val = sel_row_view[df_view.columns[0]] # ID usando primera columna vista
                         
@@ -578,11 +667,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-
-
-
-
-
-
-
