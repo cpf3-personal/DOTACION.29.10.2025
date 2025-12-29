@@ -99,12 +99,12 @@ FORM_CONFIG = {
         "CRED.": {"type": "text", "validate": "cedula"},
         "SITUACION": {"type": "select", "options": ["PRESENTE", "EGRESADO", "PENDIENTE DE PRESENTACION", "PENDIENTE DE NOTIFICACION"]},
         "MASC / FEM": {"type": "select", "options": ["MASCULINO", "FEMENINO"]},
-        "INGRESO": {"type": "date", "min_year": 1993},
+        "INGRESO": {"type": "date"},
         "DISP. ING.": {"type": "text"},
-        "FECHA DISP. ING": {"type": "date", "min_year": 1993},
-        "FECHA ING. C.P.F.NOA": {"type": "date", "min_year": 2011},
+        "FECHA DISP. ING": {"type": "date"},
+        "FECHA ING. C.P.F.NOA": {"type": "date"},
         "DISP.": {"type": "text"},
-        "FECHA DE LA DISP.": {"type": "date", "min_year": 2011},
+        "FECHA DE LA DISP.": {"type": "date"},
         # --- ¡CAMBIO AQUÍ! ---
         # Se quitó "min_year": 1993 de este campo.
         # No podemos limitar la fecha de nacimiento, ¡la gente nacía antes de 1993!
@@ -126,6 +126,11 @@ FORM_CONFIG = {
         "TELEFONO": {"type": "text", "validate": "numeric"},
         "USUARIO G.D.E.": {"type": "text"},
         "CORREO ELEC": {"type": "text"}, # Podríamos agregar validación "email"
+        "FECHA DE EGRESO": {"type": "date"},
+        "DESTINO": {"type": "text"},
+        "DISP. DE EGRESO": {"type": "text"},
+        "FECHA DISPOSICION": {"type": "date"},
+        "NOTA REMISION DE D.L.P.": {"type": "text"},
     },
     "FUNCIONES": {
         "EXPEDIENTE": {"type": "text", "max_chars": 40},
@@ -254,7 +259,7 @@ FORM_CONFIG = {
         "FECHA": {"type": "date"},
         "HORA DE DEBIA INGRESAR": {"type": "time"},
         "HORA QUE INGRESO": {"type": "time"},
-        "N° DE IMPUNTUALIDAD": {"type": "select", "options": lambda conn: get_options_from_sheet(conn, "I1:I16")},
+        "N° DE IMPUNTUALIDAD": {"type": "select", "options": lambda conn: get_options_from_sheet(conn, "I2:I16")},
     },
     "COMPLEMENTO DE HABERES": {
         "EXPEDIENTE": {"type": "text", "max_chars": 40},
@@ -287,10 +292,42 @@ FORM_CONFIG = {
         "FECHA DE PRESENTACION": {"type": "date"},
         "AEREA O TERRESTRE": {"type": "select", "options": ["TERRESTRE", "AEREA"]},
     },
+    "SUSPENSION": {
+        "EXPEDIENTE": {"type": "text", "max_chars": 40},
+        "CRED.": {"type": "text", "validate": "cedula"},
+        "INICIO": {"type": "date"},
+        "FINALIZACION": {"type": "date"},
+        "INSTRUCTOR": {"type": "text"},        
+    },
+    "RENUNCIA": {
+        "EXPEDIENTE": {"type": "text", "max_chars": 40},
+        "CRED.": {"type": "text", "validate": "cedula"},
+        "INICIO": {"type": "date"},
+        "ACEPTADA / PENDIENTE": {"type": "select", "options": ["ACEPTADA", "PENDIENTE"]},
+    },
+    "INASISTENCIA_INJUSTIFICADA": {
+        "EXPEDIENTE": {"type": "text", "max_chars": 40},
+        "CRED.": {"type": "text", "validate": "cedula"},
+        "INICIO": {"type": "date"},
+        "REINTEGRO": {"type": "date"},
+        "INSTRUCTOR": {"type": "text"},        
+    },
+    "FALLECIMIENTO": {
+        "EXPEDIENTE": {"type": "text", "max_chars": 40},
+        "CRED.": {"type": "text", "validate": "cedula"},
+        "FECHA DEL DECESO": {"type": "date"},
+        "DISPOSICION": {"type": "text", "value": "Sin Disposicion"},
+        "FECHA DE DISPOSICION": {"type": "date"},
+    },
+    "CAPACIDAD_LABORAL": {
+        "EXPEDIENTE": {"type": "text", "max_chars": 40},
+        "CRED.": {"type": "text", "validate": "cedula"},
+        "INICIO": {"type": "date"},
+        "ASISTE": {"type": "select", "options": ["SI", "NO"]},
+        "REINTEGRO": {"type": "date"},        
+    },
+
     "MESA DE ENTRADA": {
         # Esta hoja no estaba en tu lista de CAMPOS_DE_FORMULARIOS
     },
 }
-
-
-
