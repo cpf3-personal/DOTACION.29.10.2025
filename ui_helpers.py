@@ -1,6 +1,6 @@
 import streamlit as st
 import gspread
-from datetime import datetime, time
+from datetime import datetime, time, date
 from config import FORM_CONFIG, GOOGLE_SHEET_ID, validate_data # Importar la config
 
 # --- FUNCIÓN DE AYUDA PARA INYECTAR CSS Y JS ---
