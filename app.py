@@ -11,7 +11,7 @@ from datetime import datetime, time, date, timedelta
 # --- IMPORTACIÓN NUEVA PARA VELOCIDAD ---
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import io # Para manejo de buffers de memoria (Excel)
-import time
+import time as time_lib
 from gspread.exceptions import APIError
 
 # --- IMPORTACIÓN DE CONFIGURACIÓN ---
@@ -383,7 +383,7 @@ def get_available_sheets(_gc: gspread.Client):
         except APIError as e:
             if attempt < max_retries - 1:
                 sleep_time = 2 ** attempt # Exponential backoff: 1s, 2s, 4s...
-                time.sleep(sleep_time)
+                time_lib.sleep(sleep_time)
                 continue
             else:
                 # Si fallan todos los intentos, mostramos el error pero no cacheamos el fallo
