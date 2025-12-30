@@ -11,6 +11,8 @@ from datetime import datetime, time, date, timedelta
 # --- IMPORTACIÓN NUEVA PARA VELOCIDAD ---
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import io # Para manejo de buffers de memoria (Excel)
+import time
+from gspread.exceptions import APIError
 
 # --- IMPORTACIÓN DE CONFIGURACIÓN ---
 try:
@@ -97,6 +99,8 @@ def _render_form_fields(gc: gspread.Client, sheet_name: str, existing_data: dict
                             date_value = None
                 elif isinstance(default_value, datetime):
                     date_value = default_value.date()
+                elif isinstance(default_value, date):
+                    date_value = default_value
                 
                 st_date_value = date_value 
                 
@@ -365,18 +369,28 @@ def _clean_headers(headers):
     return new_headers
 
 # --- CARGA DE DATOS (OPTIMIZADA) ---
-@st.cache_data
+@st.cache_data(ttl=3600) # Cache de 1 hora para evitar muchas llamadas a la API
 def get_available_sheets(_gc: gspread.Client):
-    """Obtiene la lista de hojas disponibles que coinciden con la configuración."""
-    try:
-        sh = _gc.open_by_key(GOOGLE_SHEET_ID)
-        worksheets = sh.worksheets()
-        # Filtramos solo las hojas que nos interesan y existen
-        valid_sheets = [ws.title for ws in worksheets if ws.title in VISTA_COLUMNAS_POR_HOJA]
-        return valid_sheets
-    except Exception as e:
-        st.error(f"Error al obtener lista de hojas: {e}")
-        return []
+    """Obtiene la lista de hojas disponibles con reintentos automáticos."""
+    max_retries = 3
+    for attempt in range(max_retries):
+        try:
+            sh = _gc.open_by_key(GOOGLE_SHEET_ID)
+            worksheets = sh.worksheets()
+            # Filtramos solo las hojas que nos interesan y existen
+            valid_sheets = [ws.title for ws in worksheets if ws.title in VISTA_COLUMNAS_POR_HOJA]
+            return valid_sheets
+        except APIError as e:
+            if attempt < max_retries - 1:
+                sleep_time = 2 ** attempt # Exponential backoff: 1s, 2s, 4s...
+                time.sleep(sleep_time)
+                continue
+            else:
+                # Si fallan todos los intentos, mostramos el error pero no cacheamos el fallo
+                raise e 
+        except Exception as e:
+            st.error(f"Error al obtener lista de hojas: {e}")
+            return []
 
 def _process_single_sheet(sheet_name, ws_data, vista_cols):
     """Procesa los datos crudos de una hoja y devuelve el diccionario estructurado con tipos correctos."""
